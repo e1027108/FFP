@@ -18,8 +18,6 @@ type SequenceValue = Double
 
 type Interval = (Double,Double)
 type InitialInterval = Interval
-type Map = Double -> Double
-type Epsilon = Double -- Auschliesslich Werte > 0
 
 --Generator function - takes a function with 1 parameter,
 --creates a new function that takes the second parameter (normally masked by currying?)
@@ -71,7 +69,7 @@ halve :: (Fractional a) => a -> a
 halve x = x/2
 
 --numerical differentiation, very naive approximation strategy
-easydiff :: (Double -> Double) -> Double -> Double -> Double
+easydiff :: Map -> XCoordinate -> InitialH -> Slope
 easydiff f x h = (f (x+h) - f x)/h
 
 --improved variation of easydiff, better approximation
