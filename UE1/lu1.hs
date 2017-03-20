@@ -126,9 +126,6 @@ sequence x0 eps a = within eps (repeat (next2 a) x0)
 relativesequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
 relativesequence x0 eps a = relative eps (repeat (next2 a) x0)
 
--- null :: Map -> InitialInterval -> Epsilon -> Interval
--- relativenull :: Map -> InitialInterval -> Epsilon -> Interval
-
 --nextinterval, finds the next smaller interval around a zero
 --intentionally ignores the case of a nonexistent zero
 --ONLY use functions that fullfill the zero citeria (f(a)f(b) < 0) for some interval!
