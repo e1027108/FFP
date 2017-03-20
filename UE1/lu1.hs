@@ -12,6 +12,15 @@ type XCoordinate = Double
 type InitialH = Double -- Auschliesslich Werte > 0
 type Slope = Double
 
+type Avalue = Double -- 0 <= a <= 4
+type InitialValue = Double -- 0 <= x0 <= 1
+type SequenceValue = Double
+
+type Interval = (Double,Double)
+type InitialInterval = Interval
+type Map = Double -> Double
+type Epsilon = Double -- Auschliesslich Werte > 0
+
 --Generator function - takes a function with 1 parameter,
 --creates a new function that takes the second parameter (normally masked by currying?)
 --so we can add the start value to the list.
@@ -107,3 +116,13 @@ diff f x h0 eps = within eps (differentiate f x h0)
 
 relativediff :: Map -> XCoordinate -> InitialH -> Epsilon -> Slope
 relativediff f x h0 eps = relative eps (differentiate f x h0)
+
+--Betrachten Sie die Folgen reeller Zahlen, ...
+--TODO: next2 :: Avalue -> InitialValue -> SequenceValue
+
+-- Sei f : IR → IR eine reelle stetige Funktion...
+-- TODO:
+-- nextinterval :: Map -> Interval -> Interval
+-- intervalnesting :: Map -> InitialInterval -> [Interval]
+-- null :: Map -> InitialInterval -> Epsilon -> Interval
+-- relativenull :: Map -> InitialInterval -> Epsilon -> Interval
