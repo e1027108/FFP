@@ -119,8 +119,6 @@ diff f x h0 eps = within eps (differentiate f x h0)
 relativediff :: Map -> XCoordinate -> InitialH -> Epsilon -> Slope
 relativediff f x h0 eps = relative eps (differentiate f x h0)
 
---Betrachten Sie die Folgen reeller Zahlen, ...
---TODO: next2 :: Avalue -> InitialValue -> SequenceValue
 --sequence
 sequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
 sequence x0 eps a = within eps (repeat (next2 a) x0)
@@ -128,9 +126,30 @@ sequence x0 eps a = within eps (repeat (next2 a) x0)
 relativesequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
 relativesequence x0 eps a = relative eps (repeat (next2 a) x0)
 
--- Sei f : IR → IR eine reelle stetige Funktion...
--- TODO:
--- nextinterval :: Map -> Interval -> Interval
--- intervalnesting :: Map -> InitialInterval -> [Interval]
 -- null :: Map -> InitialInterval -> Epsilon -> Interval
 -- relativenull :: Map -> InitialInterval -> Epsilon -> Interval
+
+--nextinterval, finds the next smaller interval around a zero
+--intentionally ignores the case of a nonexistent zero
+--ONLY use functions that fullfill the zero citeria (f(a)f(b) < 0) for some interval!
+nextinterval :: Map -> Interval -> Interval
+nextinterval f i0
+ | f x == 0 = i0
+ | f x /= 0 && hasNull && f (fst i0) * f x < 0 = (fst i0, x)
+ | f x /= 0 && hasNull && f (snd i0) * f x < 0 = (x, snd i0)
+ where x = ((fst i0) + (snd i0))/2
+       hasNull = f (fst i0) * f (snd i0) < 0
+
+--intervalnesting, generator - this creates a stream of 
+--continuously smaller intervals around a zero
+intervalnesting :: Map -> InitialInterval -> [Interval]
+intervalnesting f i0 = i0:(intervalnesting f (nextinterval f i0))
+
+--null, glueing intervalnesting (generator) to the selectors
+--DOES NOT WORK with the lenient type signature of within/relative (a -> [a] -> a).
+-- Interval is (Double,Double) but Epsilon is only Double.
+--null :: Map -> InitialInterval -> Epsilon -> Interval
+--null f i0 eps = within eps (intervalnesting f i0)
+
+--relativenull :: Map -> InitialInterval -> Epsilon -> Interval
+--relativenull f i0 eps = relative eps (intervalnesting f i0)
