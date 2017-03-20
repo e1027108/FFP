@@ -83,10 +83,14 @@ intgrtEff f a b eps = within eps (integrateEfficient f a b)
 relativeintgrtEff :: (Double -> Double) -> Double -> Double -> Double -> Double
 relativeintgrtEff f a b eps = relative eps (integrateEfficient f a b)
 
-diff :: Double -> (Double -> Double) -> Double -> Double -> Double
-diff h0 f x eps = within eps (differentiate h0 f x)
-
 --helpfunction for testing the integral/differential approximations
 --diff x^2 = 2x; intgrt x^2 = x^3/3 (from 0 to 2 ~ 2.6667)
 testF :: (Num a) => a -> a
 testF x = x^2
+
+--differentiation
+diff :: Double -> (Double -> Double) -> Double -> Double -> Double
+diff h0 f x eps = within eps (differentiate h0 f x)
+
+relativediff :: Double -> (Double -> Double) -> Double -> Double -> Double
+relativediff h0 f x eps = relative eps (differentiate h0 f x)
