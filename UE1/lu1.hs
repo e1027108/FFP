@@ -125,8 +125,8 @@ relativediff f x h0 eps = relative eps (differentiate f x h0)
 sequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
 sequence x0 eps a = within eps (repeat (next2 a) x0)
 
-sequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
-sequence x0 eps a = within eps (repeat (next2 a) x0)
+relativesequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
+relativesequence x0 eps a = relative eps (repeat (next2 a) x0)
 
 -- Sei f : IR → IR eine reelle stetige Funktion...
 -- TODO:
