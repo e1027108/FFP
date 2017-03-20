@@ -1,4 +1,4 @@
-import Prelude hiding (sqrt,repeat)
+import Prelude hiding (sqrt,repeat,sequence)
 
 type InitialApprox = Double -- Auschliesslich Werte > 0
 type Epsilon = Double -- Auschliesslich Werte > 0
@@ -80,6 +80,10 @@ differentiate f x h0 = map (easydiff f x) (repeat halve h0)
 next :: Double -> Double -> Double
 next n x = (x + n/x)/2
 
+--calculates the next element in the sequence
+next2 :: Avalue -> InitialValue -> SequenceValue
+next2 a x0 = (a * x0 * (1-x0))
+
 --by bringing together the generator and selector functions,
 --we can get an actual result. repeatedly, the selector checks for the termination
 --criteria and lets the generator calculate another value if needed.
@@ -117,6 +121,12 @@ relativediff f x h0 eps = relative eps (differentiate f x h0)
 
 --Betrachten Sie die Folgen reeller Zahlen, ...
 --TODO: next2 :: Avalue -> InitialValue -> SequenceValue
+--sequence
+sequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
+sequence x0 eps a = within eps (repeat (next2 a) x0)
+
+sequence :: InitialValue -> Epsilon -> Avalue -> SequenceValue
+sequence x0 eps a = within eps (repeat (next2 a) x0)
 
 -- Sei f : IR → IR eine reelle stetige Funktion...
 -- TODO:
