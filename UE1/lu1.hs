@@ -101,11 +101,11 @@ intgrt f a b eps = within eps (integrateNaive f a b)
 relativeintgrt :: Map -> Low -> High -> Epsilon -> Area
 relativeintgrt f a b eps = relative eps (integrateNaive f a b)
 
-intgrtEff :: Map -> Low -> High -> Epsilon -> Area
-intgrtEff f a b eps = within eps (integrateEfficient f a b)
+effintgrt :: Map -> Low -> High -> Epsilon -> Area
+effintgrt f a b eps = within eps (integrateEfficient f a b)
 
-relativeintgrtEff :: Map -> Low -> High -> Epsilon -> Area
-relativeintgrtEff f a b eps = relative eps (integrateEfficient f a b)
+effrelativeintgrt :: Map -> Low -> High -> Epsilon -> Area
+effrelativeintgrt f a b eps = relative eps (integrateEfficient f a b)
 
 --helpfunction for testing the integral/differential approximations
 --diff x^2 = 2x; intgrt x^2 = x^3/3 (from 0 to 2 ~ 2.6667)
