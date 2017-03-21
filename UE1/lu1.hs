@@ -1,4 +1,4 @@
-import Prelude hiding (sqrt,repeat,sequence)
+import Prelude hiding (sqrt,repeat,sequence,null)
 
 type InitialApprox = Double -- Auschliesslich Werte > 0
 type Epsilon = Double -- Auschliesslich Werte > 0
@@ -19,15 +19,11 @@ type SequenceValue = Double
 type Interval = (Double,Double)
 type InitialInterval = Interval
 
---Generator function - takes a function with 1 parameter,
---creates a new function that takes the second parameter (normally masked by currying?)
---so we can add the start value to the list.
-
--- this influences the outcome.
+--Generator function according to the slides
 repeat :: (a -> a) -> a -> [a]
 repeat f x = (x:(repeat f (f x)))
 
---Selector functions - used to terminate the generator.
+--Selector functions - used to terminate the generator
 within :: (Ord a, Num a) => a -> [a] -> a
 within eps (a:b:rest)
  | abs(a-b) <= eps = b
@@ -37,6 +33,19 @@ relative :: (Ord a, Num a) => a -> [a] -> a
 relative eps (a:b:rest)
  | abs(a-b) <= eps * abs(b) = b
  | otherwise = relative eps (b:rest)
+
+--Selector functions for intervalnesting
+-- ASSUMPTION: (a,c) and (b,d) as old and new interval -> abs(abs(a-c) - abs(b-d)) <= eps
+within' :: (Ord a, Num a) => a -> [(a,a)] -> (a,a)
+within' eps ((a,c):(b,d):rest)
+ | abs(abs(a-c) - abs(b-d)) <= eps = (b,d)
+ | otherwise = within' eps ((b,d):rest)
+
+--TODO: 47: <= eps * abs(a-c) - macht "* abs(a-c)" wirklich sinn?
+relative' :: (Ord a, Num a) => a -> [(a,a)] -> (a,a)
+relative' eps ((a,c):(b,d):rest)
+ | abs(abs(a-c) - abs(b-d)) <= eps * abs(a-c) = (b,d)
+ | otherwise = relative' eps ((b,d):rest)
 
 --approximation strategy for an integral, very naive
 easyintegrate :: Map -> Low -> High -> Area
@@ -142,11 +151,12 @@ nextinterval f i0
 intervalnesting :: Map -> InitialInterval -> [Interval]
 intervalnesting f i0 = i0:(intervalnesting f (nextinterval f i0))
 
---null, glueing intervalnesting (generator) to the selectors
---DOES NOT WORK with the lenient type signature of within/relative (a -> [a] -> a).
--- Interval is (Double,Double) but Epsilon is only Double.
---null :: Map -> InitialInterval -> Epsilon -> Interval
---null f i0 eps = within eps (intervalnesting f i0)
+--null/relativenull, glueing intervalnesting (generator) to the selectors
+--DOES NOT WORK with the type signature of within/relative (a -> [a] -> a).
+-- Interval is (Double,Double) but Epsilon is only Double,
+-- which values need to be compared to Epsilon? 
+null :: Map -> InitialInterval -> Epsilon -> Interval
+null f i0 eps = within' eps (intervalnesting f i0)
 
---relativenull :: Map -> InitialInterval -> Epsilon -> Interval
---relativenull f i0 eps = relative eps (intervalnesting f i0)
+relativenull :: Map -> InitialInterval -> Epsilon -> Interval
+relativenull f i0 eps = relative' eps (intervalnesting f i0)
