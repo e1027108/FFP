@@ -35,16 +35,14 @@ relative eps (a:b:rest)
  | otherwise = relative eps (b:rest)
 
 --Selector functions for intervalnesting
--- ASSUMPTION: (a,c) and (b,d) as old and new interval -> abs(abs(a-c) - abs(b-d)) <= eps
-within' :: (Ord a, Num a) => a -> [(a,a)] -> (a,a)
+within' :: (Ord a, Num a, Fractional a) => a -> [(a,a)] -> (a,a)
 within' eps ((a,c):(b,d):rest)
- | abs(abs(a-c) - abs(b-d)) <= eps = (b,d)
+ | abs(a-c)/2 <= eps = (b,d)
  | otherwise = within' eps ((b,d):rest)
 
---TODO: 47: <= eps * abs(a-c) - macht "* abs(a-c)" wirklich sinn?
-relative' :: (Ord a, Num a) => a -> [(a,a)] -> (a,a)
+relative' :: (Ord a, Num a, Fractional a) => a -> [(a,a)] -> (a,a)
 relative' eps ((a,c):(b,d):rest)
- | abs(abs(a-c) - abs(b-d)) <= eps * abs(a-c) = (b,d)
+ | abs(a-c)/2 <= eps = (b,d)
  | otherwise = relative' eps ((b,d):rest)
 
 --approximation strategy for an integral, very naive
@@ -73,7 +71,7 @@ integ f a b fa fb = ((fa+fb)*(b-a)/2):
 addpair :: (Num a) => (a,a) -> a
 addpair (a,b) = a+b
 
---helpfunction, halves a given value
+--helpfunction, halves a given value (for repeat, which needs 2 parameter)
 halve :: (Fractional a) => a -> a
 halve x = x/2
 
