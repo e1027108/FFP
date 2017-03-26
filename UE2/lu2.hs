@@ -31,9 +31,25 @@ gen_turns d = concat (map (gen_turns' d) [1..])
 gen_turns' :: Dartboard -> Throws -> Turns
 gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 
+--terminating filter variants - run into non-exhaustive patterns :(
 --filter_turns_ts :: Turns -> TargetScore -> Turns
+--filter_turns_ts (x:xs) target
+--    | sum x == target = [x] ++ filter_turns_ts xs target
+--    | length x > target = [] -- sums of more than target values can't be target or lower
+--    | otherwise = filter_turns_ts xs target
 
 --filter_turns_th :: Turns -> Throws -> Turns
+--filter_turns_th (x:xs) amount
+--    | length x == amount = [x] ++ filter_turns_th xs amount
+--    | length x > amount = []
+--    | otherwise = filter_turns_th xs amount
+    
+--non-terminating filter variants:
+filter_turns_ts :: Turns -> TargetScore -> Turns
+filter_turns_th input amount = filter (\x -> length x == amount) input
+
+filter_turns_th :: Turns -> Throws -> Turns
+filter_turns_ts input target = filter (\x -> sum x == target) input
 
 --select_turns_minl :: Turns -> Turns
 
@@ -41,6 +57,7 @@ gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 
 --dart_ts :: Dartboard -> TargetScore -> Turns
 
---dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
+dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
+dart_tst d target amount = filter_turns_ts (filter_turns_th (gen_turns d) amount) target
 
 --dart_tsml :: Dartboard -> TargetScore -> Turns
