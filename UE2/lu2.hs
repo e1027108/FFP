@@ -1,3 +1,5 @@
+import Data.List
+
 type Low = Double
 type High = Double
 type Approx = [Double]
@@ -22,6 +24,9 @@ type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 --powMemo t = ...
 
 --gen_turns :: Dartboard -> Turns
+--needs rework -> should work without Throws parameter
+gen_turns :: Dartboard -> Throws -> Turns
+gen_turns a b = nub (map sort (mapM (const a) [1 .. b]))
 
 --filter_turns_ts :: Turns -> TargetScore -> Turns
 
