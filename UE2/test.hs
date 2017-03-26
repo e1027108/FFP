@@ -8,11 +8,11 @@ type TargetScore = Int      -- Gewuenschte Zielpunktsumme > 0
 type Throws      = Int      -- Anz. von Wuerfen einer Wurffolge > 0
 
 --executes gen_single for all sub list lengths (e.g. [1,2,3] -> [1], [1,2], [1,2,3]
-gen_all :: (Ord a, Eq a) => [a] -> [[a]] -> [[a]] -> Int -> [[a]]
-gen_all as bs ret i0
- | bs == [] = gen_all as startList (ret ++ startList) 1
- | i0 < (length as)-1 = gen_all as (gen_single as bs [] 0) (ret ++ (gen_single as bs [] 0)) (i0+1)
- | otherwise = ret ++ [as]
+gen_all :: (Ord a, Eq a) => [a] -> [[a]] -> [[a]] -> Int -> Int -> [[a]]
+gen_all as bs ret i0 iN
+ | bs == [] = gen_all as startList (ret ++ startList) 1 iN
+ | i0 < iN = gen_all as (gen_single as bs [] 0) (ret ++ (gen_single as bs [] 0)) (i0+1) iN
+ | otherwise = ret
  where startList = map makeList as
 
 -- adds one element of the dartboard to all the lists
