@@ -24,9 +24,12 @@ type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 --powMemo t = ...
 
 --gen_turns :: Dartboard -> Turns
+gen_turns :: Dartboard -> Turns
+gen_turns d = concat (map (gen_turns' d) [1..])
+
 --needs rework -> should work without Throws parameter
-gen_turns :: Dartboard -> Throws -> Turns
-gen_turns a b = nub (map sort (mapM (const a) [1 .. b]))
+gen_turns' :: Dartboard -> Throws -> Turns
+gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 
 --filter_turns_ts :: Turns -> TargetScore -> Turns
 
