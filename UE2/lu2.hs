@@ -35,7 +35,7 @@ filter_turns_ts :: Turns -> TargetScore -> Turns
 filter_turns_ts input target = filter (\x -> sum x == target) input
 
 filter_turns_th :: Turns -> Throws -> Turns
-filter_turns_th input amount = filter' (\x -> length x == amount) input
+filter_turns_th input amount = filter (\x -> length x == amount) input
 --filter_turns_th input amount = takeWhile (length x > amount) [ x | x <- input, length x == amount]
 
 --select_turns_minl :: Turns -> Turns
