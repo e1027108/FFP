@@ -50,10 +50,10 @@ gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 -- | otherwise         = filter_turns_ts as ts
 --filter_turns_ts [] _ = []
 
---filters turns, takes first gen_turns result (sorting important) so set higher bound on sum, after which no result should be coming anymore
+--filters turns, takes all results up until the length of target/smallest db number
 filter_turns_ts :: Turns -> TargetScore -> Turns
 --filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> length x < target+1) input)
-filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> sum x < (target*(input!!0!!0)+1)) input)
+filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> length x < (quot target (input!!0!!0))+1) input)
 
 filter_turns_th :: Turns -> TargetScore -> Turns
 filter_turns_th input target = filter (\x -> length x == target) (takeWhile (\x -> length x < target+1) input)
