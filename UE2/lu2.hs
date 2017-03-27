@@ -46,10 +46,10 @@ gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
     
 --non-terminating filter variants:
 filter_turns_ts :: Turns -> TargetScore -> Turns
-filter_turns_th input amount = filter (\x -> length x == amount) input
+filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> length x < target+1) input)
 
 filter_turns_th :: Turns -> Throws -> Turns
-filter_turns_ts input target = filter (\x -> sum x == target) input
+filter_turns_th input amount = filter (\x -> length x == amount) (takeWhile (\x -> length x < amount+1) input)
 
 --select_turns_minl :: Turns -> Turns
 
