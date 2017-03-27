@@ -14,14 +14,31 @@ type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
 --maxDeviation1 :: Low -> High -> Approx
 
---powDAC :: Integer -> Integer
---powDAC = divideAndConquer...
-
 --maxDeviation2 :: Low -> High -> Approx
 
---powMemo :: Integer -> Integer
---powMemo 0 = ...
---powMemo t = ...
+divideAndConquer :: (p -> Bool) -> (p -> s) -> (p -> [p]) -> (p -> [s] -> s) -> p -> s
+divideAndConquer indiv solve divide combine initPb = 
+	dAC initPb
+        where
+          dAC pb
+            | indiv pb = solve pb
+            | otherwise = combine pb (map dAC (divide pb))
+
+powDAC :: Integer -> Integer
+powDAC t = divideAndConquer indiv solve divide combine t
+	   where
+	     indiv t		= (t == 0)
+	     solve t
+	       | t == 0		= 1
+	       | otherwise 	= error "solve: problem divisible"
+	     divide t		= [t-1,t-1]
+	     combine _ [l1,l2] 	= l1 + l2
+
+powMemo :: Integer -> Integer
+powMemo 0 = 1
+powMemo t = powerlist !! fromIntegral (t-1) + powerlist !! fromIntegral (t-1)
+
+powerlist = [powMemo x | x <- [0..]]
 
 -- ~~~~~~~~~~~~~~~~~
 -- Exercise - Part 2
