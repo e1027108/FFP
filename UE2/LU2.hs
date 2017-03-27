@@ -34,7 +34,14 @@ gen_turns d = concat (map (gen_turns' d) [1..])
 gen_turns' :: Dartboard -> Throws -> Turns
 gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 
---filters the turns that have the right amount of throws
+--patricks version
+--filter_turns_ts :: Turns -> TargetScore -> Turns
+--filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> length x < target+1) input)
+
+--filter_turns_th :: Turns -> TargetScore -> Turns
+--filter_turns_th input target = filter (\x -> length x == target) (takeWhile (\x -> length x < target+1) input)
+
+filters the turns that have the right amount of throws
 filter_turns_th :: Turns -> Throws -> Turns
 filter_turns_th (a:as) th
  | length a == th    = [a] ++ filter_turns_th as th
@@ -42,7 +49,7 @@ filter_turns_th (a:as) th
  | otherwise         = filter_turns_th as th
 filter_turns_th [] _ = []
 
---filters the turns that points sum up to the right value
+filters the turns that points sum up to the right value
 filter_turns_ts :: Turns -> Throws -> Turns
 filter_turns_ts (a:as) ts
  | sum a == ts       = [a] ++ filter_turns_ts as ts
