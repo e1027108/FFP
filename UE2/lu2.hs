@@ -44,7 +44,7 @@ gen_turns' a b = nub (map sort (mapM (const a) [1 .. b]))
 --    | length x > amount = []
 --    | otherwise = filter_turns_th xs amount
     
---non-terminating filter variants:
+--now terminate
 filter_turns_ts :: Turns -> TargetScore -> Turns
 filter_turns_ts input target = filter (\x -> sum x == target) (takeWhile (\x -> length x < target+1) input)
 
