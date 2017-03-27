@@ -80,7 +80,7 @@ dart_ts d ts = filter_turns_ts (gen_turns (select_useful d ts)) ts
 
 -- removes integers from dartboard that are greater than the target score
 select_useful :: Dartboard -> TargetScore -> Dartboard
-select_useful d ts = filter (<ts) d
+select_useful d ts = filter (<=ts) d
 
 -- returns the turns with the right number of throws and target score
 dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
