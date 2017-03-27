@@ -62,4 +62,6 @@ dart_ts d ts = filter_turns_ts (ts_stop ts (gen_turns d) (gen_turns d) 0) ts
 
 --dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
 
---dart_tsml :: Dartboard -> TargetScore -> Turns
+--performance problems with increased input values (maybe sort list by length in previous steps?)
+dart_tsml :: Dartboard -> TargetScore -> Turns
+dart_tsml d ts = select_turns_minl (dart_ts d ts)
