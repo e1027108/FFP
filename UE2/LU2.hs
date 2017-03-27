@@ -72,10 +72,6 @@ dart_ts d ts = filter_turns_ts (gen_turns d) ts
 dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
 dart_tst d ts th = filter_turns_ts (filter_turns_th (gen_turns d) th) ts
 
-<<<<<<< HEAD:UE2/LU2.hs
 -- returns the turns that reach the target score with the minimal amount of throws
-=======
---performance problems with increased input values (maybe sort list by length in previous steps?)
->>>>>>> 2df5a5145ece16065011e3bbc1d6505963c6493c:UE2/lu2_christoph.hs
 dart_tsml :: Dartboard -> TargetScore -> Turns
 dart_tsml d ts = select_turns_minl (dart_ts d ts)
