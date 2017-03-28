@@ -12,9 +12,11 @@ type Turns = [Turn] -- Strom von Wurffolgen
 type TargetScore = Int -- Gewuenschte Zielpunktsumme > 0
 type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
---maxDeviation1 :: Low -> High -> Approx
+maxDeviation1 :: Low -> High -> Approx
+maxDeviation1 a0 b0 = [(b0 - a0) / fromIntegral (powDAC x) | x <- [1..]]
 
---maxDeviation2 :: Low -> High -> Approx
+maxDeviation2 :: Low -> High -> Approx
+maxDeviation2 a0 b0 = [(b0 - a0) / fromIntegral (powMemo x) | x <- [1..]]
 
 divideAndConquer :: (p -> Bool) -> (p -> s) -> (p -> [p]) -> (p -> [s] -> s) -> p -> s
 divideAndConquer indiv solve divide combine initPb = 
