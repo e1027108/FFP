@@ -6,8 +6,8 @@ type Turns = [Turn] -- Strom von Wurffolgen
 type TargetScore = Int -- Gewuenschte Zielpunktsumme > 0
 type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
---seems ... not enough
-data Node = Empty | N [Node]
+--is this allowed? we'll see
+data Node a = Empty | N a [Node a]
 
 --bt_dart_ts :: Dartboard -> TargetScore -> Turns
 
@@ -15,14 +15,14 @@ data Node = Empty | N [Node]
 --goal_ts :: Node -> Bool
 
 --computes all Turns of specidfied target score in specified amount of throws
---bt_dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
---bt_dart_tst d s t = []
+bt_dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
+bt_dart_tst d s t = []
 
---succ_tst :: Node -> [Node]
---succ_tst a = []
+succ_tst :: Node a -> [Node a]
+succ_tst a = []
 
---goal_tst :: Node -> Bool
---goal_tst a = False
+goal_tst :: Node a -> Bool
+goal_tst a = False
 
 --bt_dart_tsml :: Dartboard -> TargetScore -> Turns
 
