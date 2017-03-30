@@ -6,27 +6,30 @@ type Turns = [Turn] -- Strom von Wurffolgen
 type TargetScore = Int -- Gewuenschte Zielpunktsumme > 0
 type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
---data Node = ...
+--seems ... not enough
+data Node = Empty | N [Node]
 
 --bt_dart_ts :: Dartboard -> TargetScore -> Turns
 
 --succ_ts :: Node -> [Node]
 --goal_ts :: Node -> Bool
 
+--computes all Turns of specidfied target score in specified amount of throws
 --bt_dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
+--bt_dart_tst d s t = []
 
 --succ_tst :: Node -> [Node]
+--succ_tst a = []
+
 --goal_tst :: Node -> Bool
+--goal_tst a = False
 
 --bt_dart_tsml :: Dartboard -> TargetScore -> Turns
 
 --succ_tsml :: Node -> [Node]
 --goal_tsml :: Node -> Bool
 
---searchDfs :: (Eq node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
-
---succ :: node -> [node]
---goal :: node -> Bool
+--sort :: Turn -> Turn
 
 
 --searchPfsFst :: (Ord node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
