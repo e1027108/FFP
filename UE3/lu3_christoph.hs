@@ -42,10 +42,10 @@ instance Eq Node where
 --        | goal (top s) = top s : search' (pop s)
 --        | otherwise = let x = top s in search' (foldr push (pop s) (succ x))
 
-succ_ts :: node -> [node]
+succ_ts :: Node -> [Node]
 -- succ Nil = error "successor on empty node"
-succ_ts Nil = Nil 
-succ_ts N x xs = xs
+succ_ts Nil = [] 
+succ_ts (N x xs) = xs
 
 --goal :: node -> Bool
 --goal Nil = False
