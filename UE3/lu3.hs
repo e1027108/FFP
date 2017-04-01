@@ -7,7 +7,7 @@ type TargetScore = Int -- Gewuenschte Zielpunktsumme > 0
 type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
 --is this allowed? we'll see
-data Node a = Empty | N a [Node a]
+data Node = Empty | N Turn Throws TargetScore [Node]
 
 --bt_dart_ts :: Dartboard -> TargetScore -> Turns
 
@@ -18,11 +18,24 @@ data Node a = Empty | N a [Node a]
 bt_dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
 bt_dart_tst d s t = []
 
-succ_tst :: Node a -> [Node a]
-succ_tst a = []
+{-searchDfs :: (Eq node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
+searchDfs succ goal x = (search' (push x emptyStack) )
+    where
+        search' s
+            | stackEmpty s = []
+            | goal (top s) = top s : search' (pop s)
+            | otherwise = let x = top s
+                in search' (foldr push (pop s) (succ x))-}
 
-goal_tst :: Node a -> Bool
-goal_tst a = False
+succ_tst :: Node -> [Node]
+succ_tst (N turn th _ n)
+    | th <= (length turn) = n --if we haven't gone over the allowed number of throws
+    | otherwise = [] --we want to stop here
+
+goal_tst :: Node -> Bool
+goal_tst (N turn th ts _)
+    | (length turn) == th && (sum turn) == ts = True
+    | otherwise = False
 
 --bt_dart_tsml :: Dartboard -> TargetScore -> Turns
 
