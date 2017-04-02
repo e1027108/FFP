@@ -66,6 +66,18 @@ goal_tst (N d turn th ts)
     | (length turn) == th && (sum turn) == ts = True
     | otherwise = False
 
+--computes successors filtering duplicates in range of given targetscore
+succ_tsml :: Node -> [Node]
+succ_tsml Nil = []
+succ_tsml (N d t th ts) = [(N d (x:t) th ts)| x <- (filter (>= (maximum t)) d) , sum (x:t) <= ts]
+
+--same as goal_ts
+goal_tsml :: Node -> Bool
+goal_tsml Nil = False
+goal_tsml (N d turn th ts)
+    | (sum turn) == ts = True
+    | otherwise = False
+
 -- *************
 --Help functions
 -- *************
@@ -81,6 +93,15 @@ removeDuplicates (t1:turns)
 getTurn :: Node -> Turn
 getTurn (N d t ts th) = t
 
+--returns list with minimum length entries
+minlength :: Turns -> Turns
+minlength [] = []
+minlength turns = filter (\x -> length x <= minLen turns) turns 
+
+minLen :: Turns -> Throws
+minLen [] = 0
+minLen as = minimum (map (\x -> length x) as)
+
 -- ************************************************************
 --functions to answer the proposed questions using backtracking
 -- ************************************************************
@@ -91,3 +112,6 @@ bt_dart_ts d ts = removeDuplicates (map sort (concat [map getTurn (searchDfs suc
 --computes all Turns of specified target score in specified amount of throws
 bt_dart_tst :: Dartboard -> TargetScore -> Throws -> Turns
 bt_dart_tst d ts th = concat [map getTurn (searchDfs succ_tst goal_tst (N d [x] th ts)) | x <- (sort d) ]
+
+bt_dart_tsml :: Dartboard -> TargetScore -> Turns
+bt_dart_tsml d ts = minlength (concat [map getTurn (searchDfs succ_tsml goal_tsml (N d [x] 0 ts)) | x <- (filter (<= ts) d)])
