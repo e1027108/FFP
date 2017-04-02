@@ -1,4 +1,5 @@
 import Stack
+import PQueue
 import Data.List
 
 type Points      = Int      -- Punktwert einer Dart-Scheibe; echt positive Zahl
@@ -11,7 +12,7 @@ type Throws      = Int      -- Anzahl von Wuerfen einer Wurffolge > 0
 
 --The type Node carries information on the Turn (including this nodes Points),
 --the TargetScore and the right number of Throws. Also, a list of successors is given
-data Node = Nil | N Dartboard Turn TargetScore Throws deriving Show
+data Node = Nil | N Dartboard Turn TargetScore Throws deriving (Ord,Show)
 
 --Equality for type Node, made up of individual (==) calls on all the components of Node
 instance Eq Node where
@@ -115,3 +116,30 @@ bt_dart_tst d ts th = concat [map getTurn (searchDfs succ_tst goal_tst (N d [x] 
 
 bt_dart_tsml :: Dartboard -> TargetScore -> Turns
 bt_dart_tsml d ts = minlength (concat [map getTurn (searchDfs succ_tsml goal_tsml (N d [x] 0 ts)) | x <- (filter (<= ts) d)])
+
+-- **************
+--EXERCISE PART 2
+-- **************
+
+searchPfsFst :: (Ord node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
+searchPfsFst succ goal x
+  = search' (enPQ x emptyPQ)
+    where
+      search' q
+        | pqEmpty q         = []
+        | goal (frontPQ q)  = [frontPQ q]
+        | otherwise
+            = let x = frontPQ q
+              in search' (foldr enPQ (dePQ q) (succ x))
+
+--succ_low :: Node -> [Node]
+--succ_low (N d t ts th) = 
+
+--goal_low :: Node -> Bool
+--goal_low (N d t ts th)
+
+--psf_low :: Dartboard -> TargetScore -> Turns
+--psf_low d ts = 
+
+--succ_high :: Node -> [Node]
+--goal_high :: Node -> Bool  
