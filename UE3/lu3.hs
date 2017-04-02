@@ -31,7 +31,7 @@ searchDfs succ goal x = (search' (push x emptyStack) )
 
 succ_tst :: Node -> [Node]
 succ_tst (N d turn th ts) --if we haven't gone over the allowed number of throws
-    | th >= (length turn) = [ (N d x th ts) | x <- (generate turn d) ] --TODO generate nodes here
+    | th > (length turn) = [ (N d x th ts) | x <- (generate turn d) ]
     | otherwise = [] --we want to stop here
     
 generate :: Turn -> Dartboard -> Turns
