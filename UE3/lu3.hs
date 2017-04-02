@@ -29,14 +29,25 @@ searchDfs succ goal x = (search' (push x emptyStack) )
             | otherwise = let x = top s
                 in search' (foldr push (pop s) (succ x))-}
 
+{-
+generates all turns that are extensions to the input node and returns a list of them
+only generates nodes if input node permits adding another throw, throws are added in a sorted fashion
+-}
 succ_tst :: Node -> [Node]
-succ_tst (N d turn th ts) --if we haven't gone over the allowed number of throws
+succ_tst (N d turn th ts)
     | th > (length turn) = [ (N d x th ts) | x <- (generate turn d) ]
     | otherwise = [] --we want to stop here
-    
-generate :: Turn -> Dartboard -> Turns
-generate t d = [ t ++ [x] | x <- (filter (>= (maximum t)) d) ]
 
+{-
+adds to list of throws another throw from given dartboard
+does not consider throws that are smaller than the highest one for purposes of sorting
+-}
+generate :: Turn -> Dartboard -> Turns
+generate t d 
+    | t /= [] = [ t ++ [x] | x <- (filter (>= (maximum t)) d) ]
+    | otherwise = [ [x] | x <- d ]
+
+-- checks for the node whether throws are of specified amount and score is of specified sum
 goal_tst :: Node -> Bool
 goal_tst (N d turn th ts)
     | (length turn) == th && (sum turn) == ts = True
