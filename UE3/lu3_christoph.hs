@@ -66,6 +66,10 @@ goal_tst (N d turn th ts)
     | (length turn) == th && (sum turn) == ts = True
     | otherwise = False
 
+-- *************
+--Help functions
+-- *************
+
 --removes duplicate entries from a list of turns
 removeDuplicates :: Turns -> Turns
 removeDuplicates [] = []
