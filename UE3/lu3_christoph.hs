@@ -1,20 +1,5 @@
-module Stack (Stack,push,pop,top,emptyStack,stackEmpty) where 
-push       :: a -> Stack a -> Stack a
-pop        :: Stack a -> Stack a
-top        :: Stack a -> a
-emptyStack :: Stack a
-
-data Stack a = EmptyStk | Stk a (Stack a)
-
-push x s            = Stk x s
-pop EmptyStk        = error "pop from empty stack"
-pop (Stk _ s)       = s
-top EmptyStk        = error "top from empty stack"
-top (Stk x _)       = x
-emptyStack          = EmptyStk
-stackEmpty EmptyStk = True
-stackEmpty _        = False
-
+import Stack
+import Data.List
 
 type Points      = Int      -- Punktwert einer Dart-Scheibe; echt positive Zahl
 type Dartboard   = [Points] -- Dart-Scheibe charakterisiert durch Liste echt aufsteigender Punktwerte
@@ -54,7 +39,13 @@ goal_ts (N d t ts th)
  | otherwise   = False
 
 bt_dart_ts :: Dartboard -> TargetScore -> Turns
-bt_dart_ts d ts = concat [map getTurn (searchDfs succ_ts goal_ts (N d [x] ts 0))| x <- (filter (<=ts) d)]
+bt_dart_ts d ts = removeDuplicates (map sort (concat [map getTurn (searchDfs succ_ts goal_ts (N d [x] ts 0))| x <- (filter (<=ts) d)]))
+
+removeDuplicates :: Turns -> Turns
+removeDuplicates [] = []
+removeDuplicates (t1:turns)
+ | elem t1 turns = removeDuplicates turns
+ | otherwise     = t1 : removeDuplicates turns
 
 getTurn :: Node -> Turn
 getTurn (N d t ts th) = t
