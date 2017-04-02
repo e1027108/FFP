@@ -1,3 +1,5 @@
+import Control.Monad
+
 type Points = Int -- Punktwert einer Dart-Scheibe; echt positive Zahl
 type Dartboard = [Points] -- Dart-Scheibe charakterisiert durch Liste echt aufsteigender Punktwerte
 type Turn = [Points] {- Punktwerte einer Wurffolge; nur Punktwerte, die auf der Scheibe vorkommen
@@ -7,7 +9,7 @@ type TargetScore = Int -- Gewuenschte Zielpunktsumme > 0
 type Throws = Int -- Anzahl von Wuerfen einer Wurffolge > 0
 
 --is this allowed? we'll see
-data Node = Empty | N Turn Throws TargetScore [Node]
+data Node = Empty | N Dartboard Turn Throws TargetScore [Node]
 
 --bt_dart_ts :: Dartboard -> TargetScore -> Turns
 
@@ -28,12 +30,15 @@ searchDfs succ goal x = (search' (push x emptyStack) )
                 in search' (foldr push (pop s) (succ x))-}
 
 succ_tst :: Node -> [Node]
-succ_tst (N turn th _ n)
-    | th <= (length turn) = n --if we haven't gone over the allowed number of throws
+succ_tst (N d turn th _ n) --if we haven't gone over the allowed number of throws
+    | th < (length turn) = n --TODO generate nodes here
     | otherwise = [] --we want to stop here
+    
+generate :: Turn -> Dartboard -> Turns
+generate t d = [ t ++ [x] | x <- (filter (>= (maximum t)) d) ]
 
 goal_tst :: Node -> Bool
-goal_tst (N turn th ts _)
+goal_tst (N d turn th ts _)
     | (length turn) == th && (sum turn) == ts = True
     | otherwise = False
 
