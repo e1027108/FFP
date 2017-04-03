@@ -12,7 +12,7 @@ type Throws      = Int      -- Anzahl von Wuerfen einer Wurffolge > 0
 
 --The type Node carries information on the Turn (including this nodes Points),
 --the TargetScore and the right number of Throws. Also, a list of successors is given
-data Node = Nil | N Dartboard Turn TargetScore Throws deriving (Ord,Show)
+data Node = Nil | N Dartboard Turn TargetScore Throws deriving (Show)
 
 --Equality for type Node, made up of individual (==) calls on all the components of Node
 instance Eq Node where
@@ -20,7 +20,24 @@ instance Eq Node where
   d1 == d2 && t1 == t2 && ts1 == ts2 && th1 == th2
  Nil == Nil = True
  Nil == _ = False
+ 
+instance Ord Node where -- (<=) only is minimally acceptable implementation
+    N d1 t1 ts1 th1 <= N d2 t2 ts2 th2
+        | (length t1) < (length t2) = True -- this is an arbitrary rule proposal
+        | (length t1) > (length t2) = False
+        | smEq t1 t2 = True
+        | otherwise = False
+        where
+            smEq (x:xs) (y:ys)
+                | (length xs) > 0 = x <= y && smEq xs ys
+                | otherwise = x <= y
+    Nil <= _ = False
+    _ <= Nil = False
 
+-- **************
+--EXERCISE PART 1
+-- **************
+ 
 searchDfs :: (Node -> [Node]) -> (Node -> Bool) -> Node -> [Node]
 searchDfs succ goal x 
  = (search' (push x emptyStack))
