@@ -27,7 +27,7 @@ instance Ord Node where -- (<=) only is minimally acceptable implementation
         | (minimum t1) == (minimum t2) && countMin t1 > countMin t2 = True
         | (minimum t1) == (minimum t2) && countMin t1 == countMin t2 = (drop (countMin t1) t1) <= (drop (countMin t2) t2)
         | otherwise = False
-        where countMin t1 = (length . filter ( (minimum t1) == )) t1
+        where countMin x = (length . filter ( (minimum x) == )) x
     Nil <= _ = False
     _ <= Nil = False
 
