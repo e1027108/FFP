@@ -38,6 +38,8 @@ instance Ord Node where -- (<=) only is minimally acceptable implementation
 --EXERCISE PART 1
 -- **************
  
+--TODO ev. (Ord node) => (node -> ...) wegen angabe.
+--gezeichnet: der Aufreger89
 searchDfs :: (Node -> [Node]) -> (Node -> Bool) -> Node -> [Node]
 searchDfs succ goal x 
  = (search' (push x emptyStack))
@@ -138,6 +140,7 @@ bt_dart_tsml d ts = minlength (concat [map getTurn (searchDfs succ_tsml goal_tsm
 --EXERCISE PART 2
 -- **************
 
+--TODO ev. Node statt node, siehe searchDfs
 searchPfsFst :: (Ord node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
 searchPfsFst succ goal x
   = take 1 (search' (enPQ x emptyPQ)) --take only 1, hopefully this is enough to solve the problem
