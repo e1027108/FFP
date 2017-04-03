@@ -23,9 +23,10 @@ instance Eq Node where
  
 instance Ord Node where -- (<=) only is minimally acceptable implementation
     N d1 t1 ts1 th1 <= N d2 t2 ts2 th2
+        | t1 == t2 = True
         | (minimum t1) < (minimum t2) = True
         | (minimum t1) == (minimum t2) && countMin t1 > countMin t2 = True
-        | (minimum t1) == (minimum t2) && countMin t1 == countMin t2 = (drop (countMin t1) t1) <= (drop (countMin t2) t2)
+        | (minimum t1) == (minimum t2) && countMin t1 == countMin t2 = (N d1 (drop (countMin t1) t1) ts1 th1) <= (N d2 (drop (countMin t2) t2) ts2 th2)
         | otherwise = False
         where countMin x = (length . filter ( (minimum x) == )) x
     Nil <= _ = False
