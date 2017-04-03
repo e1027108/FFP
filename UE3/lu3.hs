@@ -123,7 +123,7 @@ bt_dart_tsml d ts = minlength (concat [map getTurn (searchDfs succ_tsml goal_tsm
 
 searchPfsFst :: (Ord node) => (node -> [node]) -> (node -> Bool) -> node -> [node]
 searchPfsFst succ goal x
-  = search' (enPQ x emptyPQ)
+  = take 1 (search' (enPQ x emptyPQ)) --take only 1, hopefully this is enough to solve the problem
     where
       search' q
         | pqEmpty q         = []
@@ -132,14 +132,20 @@ searchPfsFst succ goal x
             = let x = frontPQ q
               in search' (foldr enPQ (dePQ q) (succ x))
 
---succ_low :: Node -> [Node]
---succ_low (N d t ts th) = 
+psf_low :: Dartboard -> TargetScore -> Turns
+psf_low d ts = []
+              
+succ_low :: Node -> [Node]
+succ_low (N d t ts th) = []
 
---goal_low :: Node -> Bool
---goal_low (N d t ts th)
+goal_low :: Node -> Bool
+goal_low (N d t ts th) = False
 
---psf_low :: Dartboard -> TargetScore -> Turns
---psf_low d ts = 
+psf_high :: Dartboard -> TargetScore -> Turns
+psf_high d ts = []
 
---succ_high :: Node -> [Node]
---goal_high :: Node -> Bool  
+succ_high :: Node -> [Node]
+succ_high (N d t ts th) = []
+
+goal_high :: Node -> Bool  
+goal_high (N d t ts th) = False
