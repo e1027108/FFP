@@ -144,7 +144,7 @@ searchPfsFst succ goal x
     where
       search' q
         | pqEmpty q         = []
-        | goal (frontPQ q)  = [frontPQ q]
+        | goal (frontPQ q)  = frontPQ q : search’ (dePQ q)
         | otherwise
             = let x = frontPQ q
               in search' (foldr enPQ (dePQ q) (succ x))
