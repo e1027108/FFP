@@ -4,7 +4,7 @@ pop        :: Stack a -> Stack a
 top        :: Stack a -> a
 emptyStack :: Stack a
 
-data Stack a = EmptyStk | Stk a (Stack a)
+data Stack a = EmptyStk | Stk a (Stack a) deriving Show
 
 push x s            = Stk x s
 pop EmptyStk        = error "pop from empty stack"
