@@ -23,14 +23,9 @@ instance Eq Node where
  
 instance Ord Node where -- (<=) only is minimally acceptable implementation
     N d1 t1 ts1 th1 <= N d2 t2 ts2 th2
-        | (length t1) < (length t2) = True -- this is an arbitrary rule proposal
-        | (length t1) > (length t2) = False
-        | smEq t1 t2 = True
+        | (minimum t1) < (minimum t2) = True
+        | (minimum t1) == (minimum t2) = length . filter ((minimum t1)==)
         | otherwise = False
-        where
-            smEq (x:xs) (y:ys)
-                | (length xs) > 0 = x <= y && smEq xs ys
-                | otherwise = x <= y
     Nil <= _ = False
     _ <= Nil = False
 
@@ -147,7 +142,7 @@ searchPfsFst succ goal x
     where
       search' q
         | pqEmpty q         = []
-        | goal (frontPQ q)  = frontPQ q : search’ (dePQ q)
+        | goal (frontPQ q) = frontPQ q : search' (dePQ q)
         | otherwise
             = let x = frontPQ q
               in search' (foldr enPQ (dePQ q) (succ x))
