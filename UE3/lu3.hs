@@ -23,9 +23,12 @@ instance Eq Node where
  
 instance Ord Node where -- (<=) only is minimally acceptable implementation
     N d1 t1 ts1 th1 <= N d2 t2 ts2 th2
+        | t1 == t2 = True
         | (minimum t1) < (minimum t2) = True
-        | (minimum t1) == (minimum t2) = length . filter ((minimum t1)==)
+        | (minimum t1) == (minimum t2) && countMin t1 > countMin t2 = True
+        | (minimum t1) == (minimum t2) && countMin t1 == countMin t2 = (N d1 (drop (countMin t1) t1) ts1 th1) <= (N d2 (drop (countMin t2) t2) ts2 th2)
         | otherwise = False
+        where countMin x = (length . filter ( (minimum x) == )) x
     Nil <= _ = False
     _ <= Nil = False
 
@@ -149,12 +152,15 @@ searchPfsFst succ goal x
 
 psf_low :: Dartboard -> TargetScore -> Turns
 psf_low d ts = []
-              
+
 succ_low :: Node -> [Node]
 succ_low (N d t ts th) = []
 
 goal_low :: Node -> Bool
-goal_low (N d t ts th) = False
+goal_low Nil = False
+goal_low (N d t ts th)
+    | (sum t) == ts = True
+    | otherwise = False
 
 psf_high :: Dartboard -> TargetScore -> Turns
 psf_high d ts = []
@@ -163,4 +169,5 @@ succ_high :: Node -> [Node]
 succ_high (N d t ts th) = []
 
 goal_high :: Node -> Bool  
-goal_high (N d t ts th) = False
+goal_high n = goal_low n
+
