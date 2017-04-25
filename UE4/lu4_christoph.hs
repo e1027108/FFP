@@ -17,17 +17,29 @@ data Expr     = Opd Number
 
 --mkTV :: Digits -> TargetValue -> [Expr]
 
--- TODO from merged pairing list & inserting operators -> expr ?
-
 -- TODO change this later to the more efficient variation (equational reasoning)
 -- naive procedure, generates all the possible concatenations of ordered digits.
--- TODO insert operators
+
+
+
+----- help functions -----
+
+
+-- createExpr builds a binary tree (P/T) from the number list
+createExpr :: Digits -> Expr -> [Expr]
+createExpr [] expr = [expr]
+createExpr (d:ds) expr
+ | expr == (Opd 0) = createExpr ds exprP
+ | otherwise       = createExpr ds exprP ++ createExpr ds exprT
+ where exprP = (Opr P (Opd d) (expr))
+       exprT = (Opr T (Opd d) (expr))
 
 -- getNumbers
 getNumbers :: Digits -> [Digits]
-getNumbers ds = map (\x -> concatDigits 0 x ds) (map pairingToInt (pairingDigits ds))
+getNumbers ds
+ | length ds == 1 = [ds]
+ | otherwise      = map (\x -> concatDigits 0 x ds) (map pairingToInt (pairingDigits ds))
 
------ help functions -----
 -- concatDigits removes the spaces between digits if necessary
 concatDigits :: Integer -> Digits -> Digits -> [Integer]
 concatDigits o (p:ps) (a:b:bs)
@@ -50,9 +62,11 @@ concatDigits o _ [] = [o]
 
 -- pairingDigits utilizes a binary count up to 2^(length d)-1
 pairingDigits :: Digits -> [Pairing]
-pairingDigits d = map (\x -> leadingZeros x ((length d)-1)) (
-                   map (\x -> showIntAtBase 2 intToDigit x "") [0..(2^((length d)-1))-1]
-                  )
+pairingDigits d
+ | length d == 1 = []
+ | length d > 1  = map (\x -> leadingZeros x ((length d)-1)) (
+                    map (\x -> showIntAtBase 2 intToDigit x "") [0..(2^((length d)-1))-1]
+                   )
 
 leadingZeros :: String -> Int -> String
 leadingZeros s l
@@ -63,9 +77,4 @@ leadingZeros s l
 pairingToInt :: Pairing -> [Integer]
 pairingToInt (p:ps) = [(fromIntegral (digitToInt p))] ++ pairingToInt ps
 pairingToInt [] = []
-
--- mergeLists converts the string to integer and merges the two lists in an alternating fashion
-mergeLists :: Digits -> Pairing -> [Integer]
-mergeLists (d:ds) (p:ps) = d:(fromIntegral (digitToInt p)):(mergeLists ds ps)
-mergeLists _ [] = []
 --------------------------
