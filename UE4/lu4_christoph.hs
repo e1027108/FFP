@@ -15,14 +15,31 @@ data Operator = P | T deriving (Eq,Show) -- P fuer plus, T fuer times
 data Expr     = Opd Number
                  | Opr Operator Expr Expr deriving (Eq,Show)
 
---mkTV :: Digits -> TargetValue -> [Expr]
-
 -- TODO change this later to the more efficient variation (equational reasoning)
--- naive procedure, generates all the possible concatenations of ordered digits.
+mkTV :: Digits -> TargetValue -> [Expr]
+mkTV ds tv = filter (\x -> (evalP (evalT (x))) == tv) (createExprs ds)
 
+prettyMkTV :: Digits -> TargetValue -> [String]
+prettyMkTV ds tv = map flatten (mkTV ds tv)
 
 
 ----- help functions -----
+evalT :: Expr -> Expr
+evalT (Opd x)                                 = Opd x
+evalT (Opr P (ex1) (ex2))                     = Opr P (ex1) (evalT ex2)
+evalT (Opr T (Opd x) (Opr P (Opd ex1) (ex2))) = Opr P (Opd (ex1*x)) (evalT ex2)
+evalT (Opr T (Opd x) (Opr T (Opd ex1) (ex2))) = evalT (Opr T (Opd (ex1*x)) (ex2))
+evalT (Opr T (Opd x) (Opd y))                 = Opd (x*y)
+
+evalP :: Expr -> Integer
+evalP (Opd x)               = x
+evalP (Opr P (Opd x) (ex2)) = x + evalP ex2
+
+flatten :: Expr -> String
+flatten (Opd x) = show x
+flatten (Opr T (ex1) (ex2)) = flatten ex1 ++ "*" ++ flatten ex2
+flatten (Opr P (ex1) (ex2)) = flatten ex1 ++ "+" ++ flatten ex2
+
 -- createExprs maps createExpr to numbers list
 createExprs :: Digits -> [Expr]
 createExprs ds = concat (map (\x -> createExpr x (Opd 0)) (getNumbers ds))
