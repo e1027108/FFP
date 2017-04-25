@@ -23,13 +23,15 @@ data Expr     = Opd Number
 
 
 ----- help functions -----
-
+-- createExprs maps createExpr to numbers list
+createExprs :: Digits -> [Expr]
+createExprs ds = concat (map (\x -> createExpr x (Opd 0)) (getNumbers ds))
 
 -- createExpr builds a binary tree (P/T) from the number list
 createExpr :: Digits -> Expr -> [Expr]
 createExpr [] expr = [expr]
 createExpr (d:ds) expr
- | expr == (Opd 0) = createExpr ds exprP
+ | expr == (Opd 0) = createExpr ds (Opd d)
  | otherwise       = createExpr ds exprP ++ createExpr ds exprT
  where exprP = (Opr P (Opd d) (expr))
        exprT = (Opr T (Opd d) (expr))
