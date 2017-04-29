@@ -24,6 +24,7 @@ prettyMkTV ds tv = map flatten (mkTV ds tv)
 
 
 ----- help functions -----
+-- multiply the factors, ignore the rest
 evalT :: Expr -> Expr
 evalT (Opd x)                                 = Opd x
 evalT (Opr P (ex1) (ex2))                     = Opr P (ex1) (evalT ex2)
@@ -31,10 +32,12 @@ evalT (Opr T (Opd x) (Opr P (Opd ex1) (ex2))) = Opr P (Opd (ex1*x)) (evalT ex2)
 evalT (Opr T (Opd x) (Opr T (Opd ex1) (ex2))) = evalT (Opr T (Opd (ex1*x)) (ex2))
 evalT (Opr T (Opd x) (Opd y))                 = Opd (x*y)
 
+-- sum up all the values
 evalP :: Expr -> Integer
 evalP (Opd x)               = x
 evalP (Opr P (Opd x) (ex2)) = x + evalP ex2
 
+-- print a solution in the proposed notation from the exercise
 flatten :: Expr -> String
 flatten (Opd x) = show x
 flatten (Opr T (ex1) (ex2)) = flatten ex1 ++ "*" ++ flatten ex2
