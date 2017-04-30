@@ -15,13 +15,17 @@ data Operator = P | T deriving (Eq,Show) -- P fuer plus, T fuer times
 data Expr     = Opd Number
                  | Opr Operator Expr Expr deriving (Eq,Show)
 
--- TODO change this later to the more efficient variation (equational reasoning)
+-- mkTV generates solutions for a given digits set and target value
 mkTV :: Digits -> TargetValue -> [Expr]
-mkTV ds tv = filter (\x -> (evalP (evalT (x))) == tv) (createExprs ds)
+mkTV ds tv = fastCreateExprs ds tv
 
+-- old version, inefficient
+oldMkTV :: Digits -> TargetValue -> [Expr]
+oldMkTV ds tv = filter (\x -> (evalP (evalT (x))) == tv) (createExprs ds)
+
+-- readable output
 prettyMkTV :: Digits -> TargetValue -> [String]
 prettyMkTV ds tv = map flatten (mkTV ds tv)
-
 
 ----- help functions -----
 -- multiply the factors, ignore the rest
@@ -43,6 +47,10 @@ flatten (Opd x) = show x
 flatten (Opr T (ex1) (ex2)) = flatten ex1 ++ "*" ++ flatten ex2
 flatten (Opr P (ex1) (ex2)) = flatten ex1 ++ "+" ++ flatten ex2
 
+-- fastCreateExprs maps fastCreateExpr to numbers list
+fastCreateExprs :: Digits -> TargetValue -> [Expr]
+fastCreateExprs ds tv = concat (map (\x -> fastCreateExpr x (Opd 0) tv) (getNumbers ds))
+
 -- createExprs maps createExpr to numbers list
 createExprs :: Digits -> [Expr]
 createExprs ds = concat (map (\x -> createExpr x (Opd 0)) (getNumbers ds))
@@ -53,6 +61,16 @@ createExpr [] expr = [expr]
 createExpr (d:ds) expr
  | expr == (Opd 0) = createExpr ds (Opd d)
  | otherwise       = createExpr ds exprP ++ createExpr ds exprT
+ where exprP = (Opr P (Opd d) (expr))
+       exprT = (Opr T (Opd d) (expr))
+
+-- fastCreateExpr builds a binary tree BUT with backtracking resp. targetValue
+fastCreateExpr :: Digits -> Expr -> TargetValue -> [Expr]
+fastCreateExpr [] expr tv = if evalP (evalT expr) == tv then [expr] else []
+fastCreateExpr (d:ds) expr tv
+ | evalP (evalT expr) >= tv = []
+ | expr == (Opd 0)          = fastCreateExpr ds (Opd d) tv
+ | otherwise                = fastCreateExpr ds exprP tv ++ fastCreateExpr ds exprT tv
  where exprP = (Opr P (Opd d) (expr))
        exprT = (Opr T (Opd d) (expr))
 
