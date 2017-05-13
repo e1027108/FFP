@@ -46,8 +46,8 @@ fillRowSimple :: Row -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents
 fillRowSimple r t l = [] --TODO generate all legal row variants for every row
 
 -- for a row returns false, if the columns already has a tent or a tree or an adjacent position already has a tent
-checkTentLegality :: Row -> Column -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents -> Bool
-checkTentLegality r c t ltr lte
+checkTentRowLegality :: Row -> Column -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents -> Bool
+checkTentRowLegality r c t ltr lte
     | (t !! (r-1)) <= (countRowOccurences r lte) = False --no more tents allowed
     | elem (r,c) lte || (elem (r,c-1) lte) || (elem (r,c+1) lte) || elem (r,c) ltr = False
     | otherwise = True
@@ -60,7 +60,19 @@ countRowOccurences a l = length [(x,y) | (x,y) <- l, x == a]
 countColumnOccurences :: Row -> [(Int,Int)] -> Int
 countColumnOccurences a l = length [(x,y) | (x,y) <- l, y == a]
 
---TODO check every row combination (for tents touching, column amounts)
--- > TODO check tens touching
+--checking if every tree is adjacent to at least one tent
+treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
+treesHaveTents (x:xs) tents = (treeHasTent x tents) && (treesHaveTents xs tents)
 
---TODO check if every tree is adjacent to at least one
+--checks a certain tree if it has at least one adjacent tent
+treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
+treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
+
+--checking for every tent if it conflicts with tents on other rows (the single row is checked on building it)
+checkAllTentsOtherRows :: LocationsOfTents -> Bool
+checkAllTentsOtherRows (x:xs) = (checkTentOtherRows x xs) && (checkAllTentsOtherRows xs)
+
+--check if a tent conflicts with other rows
+checkTentOtherRows :: (Row,Column) -> LocationsOfTents -> Bool
+checkTentOtherRows (r,c) tents = not( (elem (r+1,c-1) tents) || (elem (r+1,c) tents) || (elem (r+1,c+1) tents)
+                                        || (elem (r-1,c+1) tents) || (elem (r-1,c) tents) || (elem (r-1,c-1) tents) )
