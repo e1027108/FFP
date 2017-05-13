@@ -1,4 +1,5 @@
 import Data.Array
+import Data.List
 
 data Content = Tree | Tent | Empty deriving (Eq,Ord)
 
@@ -33,7 +34,7 @@ type LocationsOfTents = [(Row, Column)]
 simpleCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
 simpleCamp l r c = (array ((1,1), (8,8)) [((1,1), Tree)]) --TODO check all generated row combinations
 
---TODO make it do something smart
+--(TODO make it do something smart)
 smartCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
 smartCamp l r c = simpleCamp l r c
 
@@ -41,9 +42,21 @@ smartCamp l r c = simpleCamp l r c
 outCamp :: Camp -> [[Char]]
 outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (x, y)) | x <- [1..8]] | y <- [1..8]]
 
--- helper functions for simpleCamp
-fillRowSimple :: Row -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents
-fillRowSimple r t l = [] --TODO generate all legal row variants for every row
+--TODO combine all row combinations 
+
+--TODO filter row variants for legal ones
+
+-- generates all variants of a row (with correct amounts of tents, but not accounting for placement legality)
+generateRowVariants :: Row -> TentsPerRow -> LocationsOfTrees -> [[Column]]
+generateRowVariants r tents trees = getSubLists (tents!!(r-1)) (getOptions r trees)
+
+-- gets all sublists of a given length from a source list
+getSubLists :: Int -> [Column] -> [[Column]]
+getSubLists t c = [ x | x <- (subsequences c), (length x) == t ]
+
+--gets all positions on a row that are not containing a tree, produces duplicates that need to be filtered
+getOptions :: Row -> LocationsOfTrees -> [Column]
+getOptions r t = [ y | y <- [1..8], not (elem (r,y) t)]
 
 -- for a row returns false, if the columns already has a tent or a tree or an adjacent position already has a tent
 checkTentRowLegality :: Row -> Column -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents -> Bool
