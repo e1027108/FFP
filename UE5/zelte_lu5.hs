@@ -45,8 +45,14 @@ outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (x, y)) | x <- [1..8]] 
 
 --helper functions naive
 --filters out illegal combinations
-{-filterSolutions :: [[[Column]]] -> TentsPerRow -> [[[Column]]]
-filterSolutions tents tr = [ x | x <- tents, (count y (concat x)) == (tr!!(y-1)), y <- [1..8] ]-}
+filterSolutions :: [[[Column]]] -> TentsPerColumn -> [[[Column]]]
+filterSolutions tents tc = [ x | x <- tents, (columnsValid x tc) ]
+
+--TODO checks if tents touch from row to row
+
+--checks if all columns have the right amount of tents in them
+columnsValid :: [[Column]] -> TentsPerColumn -> Bool
+columnsValid tents tc = not (elem False ([ (count x (concat tents)) == (tc!!(x-1)) | x <- [1..8] ] ))
 
 -- counts occurrences of x
 count :: Eq a => a -> [a] -> Int
