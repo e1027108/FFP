@@ -46,9 +46,15 @@ outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (x, y)) | x <- [1..8]] 
 --helper functions naive
 --filters out illegal combinations
 filterSolutions :: [[[Column]]] -> TentsPerColumn -> [[[Column]]]
-filterSolutions tents tc = [ x | x <- tents, (columnsValid x tc) ]
+filterSolutions tents tc = [ x | x <- tents, (columnsValid x tc), (rowsCompatible x) ]
 
 --TODO checks if tents touch from row to row
+rowsCompatible :: [[Column]] -> Bool
+rowsCompatible tents
+    | (length tents) <= 1 = True
+    | (length (tents!!0)) == 0 = rowsCompatible (drop 1 tents)
+    | otherwise = ((length (intersect (tents!!0) (tents!!1))) == 0) && ((length (intersect (tents!!0) (map succ (tents!!1)))) == 0)
+                    && ((length (intersect (tents!!0) (map pred (tents!!1)))) == 0) && rowsCompatible (drop 1 tents)
 
 --checks if all columns have the right amount of tents in them
 columnsValid :: [[Column]] -> TentsPerColumn -> Bool
