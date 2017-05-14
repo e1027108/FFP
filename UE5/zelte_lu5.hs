@@ -1,5 +1,6 @@
 import Data.Array
 import Data.List
+import Debug.Trace
 
 data Content = Tree | Tent | Empty deriving (Eq,Ord)
 
@@ -42,13 +43,31 @@ smartCamp l r c = simpleCamp l r c
 outCamp :: Camp -> [[Char]]
 outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (x, y)) | x <- [1..8]] | y <- [1..8]]
 
---TODO combine all row combinations 
+--helper functions naive
+--filters out illegal combinations
+{-filterSolutions :: [[[Column]]] -> TentsPerRow -> [[[Column]]]
+filterSolutions tents tr = [ x | x <- tents, (count y (concat x)) == (tr!!(y-1)), y <- [1..8] ]-}
 
---TODO filter row variants for legal ones
+-- counts occurrences of x
+count :: Eq a => a -> [a] -> Int
+count x = length . filter (x==)
 
--- generates all variants of a row (with correct amounts of tents, but not accounting for placement legality)
-generateRowVariants :: Row -> TentsPerRow -> LocationsOfTrees -> [[Column]]
-generateRowVariants r tents trees = getSubLists (tents!!(r-1)) (getOptions r trees)
+--generates tents for all rows, combines everything
+combineAll :: LocationsOfTrees -> TentsPerRow -> [[[Column]]]
+combineAll trees tr = [ [r1,r2,r3,r4,r5,r6,r7,r8] | r1 <- (generateVars 1 tr trees), r2 <- (generateVars 2 tr trees), r3 <- (generateVars 3 tr trees),
+                            r4 <- (generateVars 4 tr trees), r5 <- (generateVars 5 tr trees), r6 <- (generateVars 6 tr trees),
+                            r7 <- (generateVars 7 tr trees), r8 <- (generateVars 8 tr trees) ]
+
+-- generates all legal variants of a row (ignoring other rows)
+generateVars :: Row -> TentsPerRow -> LocationsOfTrees -> [[Column]]
+generateVars r tents trees = [ x | x <- (getSubLists (tents!!(r-1)) (getOptions r trees)), not (tentsAdjacent x) ]
+
+-- checks if any two tents are adjacent (input is ordered ascendingly)
+tentsAdjacent :: [Column] -> Bool
+tentsAdjacent tents
+    | (length tents) <= 1 = False
+    | (abs ((tents!!0)-(tents!!1))) == 1 = True
+    | otherwise = tentsAdjacent (drop 1 tents)
 
 -- gets all sublists of a given length from a source list
 getSubLists :: Int -> [Column] -> [[Column]]
@@ -57,21 +76,6 @@ getSubLists t c = [ x | x <- (subsequences c), (length x) == t ]
 --gets all positions on a row that are not containing a tree, produces duplicates that need to be filtered
 getOptions :: Row -> LocationsOfTrees -> [Column]
 getOptions r t = [ y | y <- [1..8], not (elem (r,y) t)]
-
--- for a row returns false, if the columns already has a tent or a tree or an adjacent position already has a tent
-checkTentRowLegality :: Row -> Column -> TentsPerRow -> LocationsOfTrees -> LocationsOfTents -> Bool
-checkTentRowLegality r c t ltr lte
-    | (t !! (r-1)) <= (countRowOccurences r lte) = False --no more tents allowed
-    | elem (r,c) lte || (elem (r,c-1) lte) || (elem (r,c+1) lte) || elem (r,c) ltr = False
-    | otherwise = True
-
--- counts number of tents/trees in a row
-countRowOccurences :: Row -> [(Int,Int)] -> Int
-countRowOccurences a l = length [(x,y) | (x,y) <- l, x == a]
-
--- counts number of tents/trees in a column
-countColumnOccurences :: Row -> [(Int,Int)] -> Int
-countColumnOccurences a l = length [(x,y) | (x,y) <- l, y == a]
 
 --checking if every tree is adjacent to at least one tent
 treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
