@@ -15,11 +15,9 @@ type Row = Int -- ausschliesslich Werte von 1 bis 8
 type Column = Int -- ausschliesslich Werte von 1 bis 8
 type LocationsOfTrees = [(Row,Column)]
 
---Liste der Laenge 8, ausschliesslich Werte von 0 bis 4; Wert des i-ten
---Elements bezeichnet Zahl der Zelte in Reihe i:
+--Liste der Laenge 8, ausschliesslich Werte von 0 bis 4; Wert des i-ten Elements bezeichnet Zahl der Zelte in Reihe i:
 type TentsPerRow = [Int]
--- Liste der Laenge 8, ausschliesslich Werte von 0 bis 4; Wert des j-ten
---Elements bezeichnet Zahl der Zelte in Spalte j:
+-- Liste der Laenge 8, ausschliesslich Werte von 0 bis 4; Wert des j-ten Elements bezeichnet Zahl der Zelte in Spalte j:
 type TentsPerColumn = [Int]
 
 -- helper types
@@ -57,9 +55,10 @@ generateAllRowStates r = [ [((r,1),a),((r,2),b),((r,3),c),((r,4),d),((r,5),e),((
 --takes a state and checks whether the trees are in the right positions, border a tent, tents dont touch each other
 --and there are the right amounts of tents
 checkState :: [[((Row, Column), Content)]] -> LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Bool
-checkState state trees tr tc = (checkTreePositions trl trees) && (treesHaveTents trl tel) && (noTentsAdjacent tel) --TODO check row/column tent occurrences
-    where   trl = extractLocations state Tree
-            tel = extractLocations state Tent
+checkState state trees tr tc = (checkTreePositions trl trees) && (treesHaveTents trl tel) && (noTentsAdjacent tel)
+                                && (checkTentOccurrences tel tr tc)
+                                    where   trl = extractLocations state Tree
+                                            tel = extractLocations state Tent
 
 --takes all positions for a given content type for a state
 extractLocations :: [[((Row, Column), Content)]] -> Content -> [(Row, Column)]
@@ -80,10 +79,23 @@ treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
 treesHaveTents (x:xs) tents
     | xs == [] = (treeHasTent x tents)
     | otherwise = (treeHasTent x tents) && (treesHaveTents xs tents)
-    
+
 --checks a certain tree if it has at least one adjacent tent
 treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
 treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
+
+--checks if all rows/columns have the right occurences
+checkTentOccurrences :: LocationsOfTents -> TentsPerRow -> TentsPerColumn -> Bool
+checkTentOccurrences tents tr tc = (not (elem False [ (countRowOccurences x tents) == (tr!!(x-1)) | x <- [1..8] ]))
+                        && (not (elem False [ (countColumnOccurences y tents) == (tc!!(y-1)) | y <- [1..8] ]))
+
+-- counts number of tents in a row
+countRowOccurences :: Row -> LocationsOfTents -> Int
+countRowOccurences a l = length [(x,y) | (x,y) <- l, x == a]
+
+-- counts number of tents in a column
+countColumnOccurences :: Row -> LocationsOfTents -> Int
+countColumnOccurences a l = length [(x,y) | (x,y) <- l, y == a]
 
 
 
