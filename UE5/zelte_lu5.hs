@@ -32,21 +32,62 @@ type TentsPerColumn = [Int]
 type LocationsOfTents = [(Row, Column)]
 type EmptyLocations = [(Row,Column)]
 
---adds the locations of trees from input, computed locations of tents and filler positions to array
+--generates all possible solutions, then check if something is correct
 simpleCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
-simpleCamp trees tr tc = (array ((1,1), (8,8)) ((addContent trees Tree) ++ (addContent tents Tent) ++ (addContent filler Empty)))
+simpleCamp trees tr tc = (array ((1,1), (8,8)) (concat (head [ x | x <- generateAllBoardStates, (checkState x trees tr tc)])))
+
+--adds the locations of trees from input, computed locations of tents and filler positions to array
+smartCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
+smartCamp trees tr tc = (array ((1,1), (8,8)) ((addContent trees Tree) ++ (addContent tents Tent) ++ (addContent filler Empty)))
                     where   tents = convertToCoordinates ((filterSolutions (combineAll trees tr) tc trees)!!0)
                             filler = fillMatrix tents trees
-
---(TODO make it do something smart)
-smartCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
-smartCamp l r c = simpleCamp l r c
 
 --takes every row and puts it as a string of code chars into a list
 outCamp :: Camp -> [[Char]]
 outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (y, x)) | x <- [1..8]] | y <- [1..8]]
 
---helper functions naive
+
+
+----------------------------------------helper functions simple----------------------------------------
+--combines all possible point states into all possible row states of a given row
+generateAllRowStates :: Row -> [[((Row, Column), Content)]]
+generateAllRowStates r = [ [((r,1),a),((r,2),b),((r,3),c),((r,4),d),((r,5),e),((r,6),f),((r,7),g),((r,8),h)] | a <- cs, b <- cs, c <- cs,
+    d <- cs, e <- cs, f <- cs, g <- cs, h <- cs ] 
+        where cs = [Empty, Tree, Tent]
+
+--combines all possible states for rows into all possible states for puzzle solution boards
+generateAllBoardStates :: [[[((Row, Column), Content)]]]
+generateAllBoardStates = [ [a,b,c,d,e,f,g,h] | a <- (rs 1), b <- (rs 2), c <- (rs 3), d <- (rs 4), e <- (rs 5), f <- (rs 6), g <- (rs 7), h <- (rs 8) ]
+    where rs r = generateAllRowStates r
+
+--takes all positions for a given content type for a state
+extractLocations :: [[((Row, Column), Content)]] -> Content -> [(Row, Column)]
+extractLocations locs content = [ (fst y) | x <- locs, y <- x, (snd y) == content ]
+
+--takes a state and checks whether the trees are in the right positions, border a tent, tents dont touch each other
+--and there are the right amounts of tents
+checkState :: [[((Row, Column), Content)]] -> LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Bool
+checkState state trees tr tc = (checkTreePositions trl trees) && (treesHaveTents trl tel) && (noTentsAdjacent tel) --TODO check row/column tent occurrences
+    where   trl = extractLocations state Tree
+            tel = extractLocations state Tent
+
+--checks whether all trees in the state are actual trees that should be there and that the amounts of compared trees are equal
+checkTreePositions :: [(Row, Column)] -> LocationsOfTrees -> Bool
+checkTreePositions state trees = not (elem False [ (elem x trees) | x <- state ] ) && (length state) == (length trees)
+
+--checks a certain tree if it has at least one adjacent tent
+treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
+treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
+
+--checks for all tents if there is any adjacency
+noTentsAdjacent :: LocationsOfTents -> Bool
+noTentsAdjacent tents = (length [ (x,y) | (x,y) <- tents, (occurs (x,y)) ]) == 0
+    where occurs (x,y) = (elem (x+1,y) tents) || (elem (x-1,y) tents) || (elem (x,y-1) tents) || (elem (x,y+1) tents ) || (elem (x+1,y+1) tents) ||
+                            (elem (x-1,y-1) tents) || (elem (x-1,y+1) tents) || (elem (x+1,y-1) tents)
+
+
+
+----------------------------------------helper functions smart----------------------------------------
 --adds content information to pair
 addContent :: [(Row,Column)] -> Content -> [((Row,Column), Content)]
 addContent ps c = [ (x,c) | x<-ps ]  
@@ -109,16 +150,3 @@ treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
 treesHaveTents (x:xs) tents
     | xs == [] = (treeHasTent x tents)
     | otherwise = (treeHasTent x tents) && (treesHaveTents xs tents)
-
---checks a certain tree if it has at least one adjacent tent
-treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
-treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
-
---checking for every tent if it conflicts with tents on other rows (the single row is checked on building it)
-checkAllTentsOtherRows :: LocationsOfTents -> Bool
-checkAllTentsOtherRows (x:xs) = (checkTentOtherRows x xs) && (checkAllTentsOtherRows xs)
-
---check if a tent conflicts with other rows
-checkTentOtherRows :: (Row,Column) -> LocationsOfTents -> Bool
-checkTentOtherRows (r,c) tents = not( (elem (r+1,c-1) tents) || (elem (r+1,c) tents) || (elem (r+1,c+1) tents)
-                                        || (elem (r-1,c+1) tents) || (elem (r-1,c) tents) || (elem (r-1,c-1) tents) )
