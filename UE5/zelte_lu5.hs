@@ -10,12 +10,6 @@ instance Show Content where
     show Tent = ['Z']
     show Empty = ['u']
 
-{-
-Array (Int, Int) Content must be constucted as follows:
-array ((1,1), (n,n)) [((1,1), Content), ((1,2), Content), ...]
-first argument gives the array range, second the actual values
--}
-
 type Camp = Array (Int,Int) Content
 type Row = Int -- ausschliesslich Werte von 1 bis 8
 type Column = Int -- ausschliesslich Werte von 1 bis 8
@@ -49,20 +43,16 @@ outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (y, x)) | x <- [1..8]] 
 
 
 ----------------------------------------helper functions simple----------------------------------------
---combines all possible point states into all possible row states of a given row
-generateAllRowStates :: Row -> [[((Row, Column), Content)]]
-generateAllRowStates r = [ [((r,1),a),((r,2),b),((r,3),c),((r,4),d),((r,5),e),((r,6),f),((r,7),g),((r,8),h)] | a <- cs, b <- cs, c <- cs,
-    d <- cs, e <- cs, f <- cs, g <- cs, h <- cs ] 
-        where cs = [Empty, Tree, Tent]
-
 --combines all possible states for rows into all possible states for puzzle solution boards
 generateAllBoardStates :: [[[((Row, Column), Content)]]]
 generateAllBoardStates = [ [a,b,c,d,e,f,g,h] | a <- (rs 1), b <- (rs 2), c <- (rs 3), d <- (rs 4), e <- (rs 5), f <- (rs 6), g <- (rs 7), h <- (rs 8) ]
     where rs r = generateAllRowStates r
 
---takes all positions for a given content type for a state
-extractLocations :: [[((Row, Column), Content)]] -> Content -> [(Row, Column)]
-extractLocations locs content = [ (fst y) | x <- locs, y <- x, (snd y) == content ]
+--combines all possible point states into all possible row states of a given row
+generateAllRowStates :: Row -> [[((Row, Column), Content)]]
+generateAllRowStates r = [ [((r,1),a),((r,2),b),((r,3),c),((r,4),d),((r,5),e),((r,6),f),((r,7),g),((r,8),h)] | a <- cs, b <- cs, c <- cs,
+    d <- cs, e <- cs, f <- cs, g <- cs, h <- cs ] 
+        where cs = [Empty, Tree, Tent]
 
 --takes a state and checks whether the trees are in the right positions, border a tent, tents dont touch each other
 --and there are the right amounts of tents
@@ -71,19 +61,29 @@ checkState state trees tr tc = (checkTreePositions trl trees) && (treesHaveTents
     where   trl = extractLocations state Tree
             tel = extractLocations state Tent
 
+--takes all positions for a given content type for a state
+extractLocations :: [[((Row, Column), Content)]] -> Content -> [(Row, Column)]
+extractLocations locs content = [ (fst y) | x <- locs, y <- x, (snd y) == content ]
+
 --checks whether all trees in the state are actual trees that should be there and that the amounts of compared trees are equal
 checkTreePositions :: [(Row, Column)] -> LocationsOfTrees -> Bool
 checkTreePositions state trees = not (elem False [ (elem x trees) | x <- state ] ) && (length state) == (length trees)
-
---checks a certain tree if it has at least one adjacent tent
-treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
-treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
 
 --checks for all tents if there is any adjacency
 noTentsAdjacent :: LocationsOfTents -> Bool
 noTentsAdjacent tents = (length [ (x,y) | (x,y) <- tents, (occurs (x,y)) ]) == 0
     where occurs (x,y) = (elem (x+1,y) tents) || (elem (x-1,y) tents) || (elem (x,y-1) tents) || (elem (x,y+1) tents ) || (elem (x+1,y+1) tents) ||
                             (elem (x-1,y-1) tents) || (elem (x-1,y+1) tents) || (elem (x+1,y-1) tents)
+
+--checking if every tree is adjacent to at least one tent
+treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
+treesHaveTents (x:xs) tents
+    | xs == [] = (treeHasTent x tents)
+    | otherwise = (treeHasTent x tents) && (treesHaveTents xs tents)
+    
+--checks a certain tree if it has at least one adjacent tent
+treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
+treeHasTent (r,c) tents = (elem (r+1,c) tents) || (elem (r-1,c) tents) || (elem (r,c+1) tents) || (elem (r,c-1) tents)
 
 
 
@@ -144,9 +144,3 @@ getSubLists t c = [ x | x <- (subsequences c), (length x) == t ]
 --gets all positions on a row that are not containing a tree, produces duplicates that need to be filtered
 getOptions :: Row -> LocationsOfTrees -> [Column]
 getOptions r t = [ y | y <- [1..8], not (elem (r,y) t)]
-
---checking if every tree is adjacent to at least one tent
-treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
-treesHaveTents (x:xs) tents
-    | xs == [] = (treeHasTent x tents)
-    | otherwise = (treeHasTent x tents) && (treesHaveTents xs tents)
