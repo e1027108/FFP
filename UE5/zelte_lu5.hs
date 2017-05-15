@@ -30,10 +30,13 @@ type TentsPerColumn = [Int]
 
 -- helper types
 type LocationsOfTents = [(Row, Column)]
+type EmptyLocations = [(Row,Column)]
 
---TODO implement
+--adds the locations of trees from input, computed locations of tents and filler positions to array
 simpleCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
-simpleCamp l r c = (array ((1,1), (8,8)) [((1,1), Tree)]) --TODO check all generated row combinations
+simpleCamp trees tr tc = (array ((1,1), (8,8)) ((addContent trees Tree) ++ (addContent tents Tent) ++ (addContent filler Empty)))
+                    where   tents = convertToCoordinates ((filterSolutions (combineAll trees tr) tc)!!0)
+                            filler = fillMatrix tents trees
 
 --(TODO make it do something smart)
 smartCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
@@ -41,9 +44,21 @@ smartCamp l r c = simpleCamp l r c
 
 --takes every row and puts it as a string of code chars into a list
 outCamp :: Camp -> [[Char]]
-outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (x, y)) | x <- [1..8]] | y <- [1..8]]
+outCamp arr = map (filter (/=' ')) [unwords [show (arr ! (y, x)) | x <- [1..8]] | y <- [1..8]]
 
 --helper functions naive
+--adds content information to pair
+addContent :: [(Row,Column)] -> Content -> [((Row,Column), Content)]
+addContent ps c = [ (x,c) | x<-ps ]  
+
+--gets all positions that have neither tree nor tent
+fillMatrix :: LocationsOfTents -> LocationsOfTrees -> EmptyLocations
+fillMatrix tents trees = [ (x,y) | x <- [1..8], y <- [1..8], not (elem (x,y) tents), not (elem (x,y) trees) ]
+
+--transforms trees columns into matrix/array input
+convertToCoordinates :: [[Column]] -> LocationsOfTents
+convertToCoordinates cs = [ (x,y) | x <- [1..8], y <- [1..8], (elem y (cs!!(x-1))) ]
+
 --filters out illegal combinations
 filterSolutions :: [[[Column]]] -> TentsPerColumn -> [[[Column]]]
 filterSolutions tents tc = [ x | x <- tents, (columnsValid x tc), (rowsCompatible x) ]
