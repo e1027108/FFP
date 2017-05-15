@@ -35,7 +35,7 @@ type EmptyLocations = [(Row,Column)]
 --adds the locations of trees from input, computed locations of tents and filler positions to array
 simpleCamp :: LocationsOfTrees -> TentsPerRow -> TentsPerColumn -> Camp
 simpleCamp trees tr tc = (array ((1,1), (8,8)) ((addContent trees Tree) ++ (addContent tents Tent) ++ (addContent filler Empty)))
-                    where   tents = convertToCoordinates ((filterSolutions (combineAll trees tr) tc)!!0)
+                    where   tents = convertToCoordinates ((filterSolutions (combineAll trees tr) tc trees)!!0)
                             filler = fillMatrix tents trees
 
 --(TODO make it do something smart)
@@ -60,10 +60,10 @@ convertToCoordinates :: [[Column]] -> LocationsOfTents
 convertToCoordinates cs = [ (x,y) | x <- [1..8], y <- [1..8], (elem y (cs!!(x-1))) ]
 
 --filters out illegal combinations
-filterSolutions :: [[[Column]]] -> TentsPerColumn -> [[[Column]]]
-filterSolutions tents tc = [ x | x <- tents, (columnsValid x tc), (rowsCompatible x) ]
+filterSolutions :: [[[Column]]] -> TentsPerColumn -> LocationsOfTrees -> [[[Column]]]
+filterSolutions tents tc trees = [ x | x <- tents, (columnsValid x tc), (rowsCompatible x), (treesHaveTents trees (convertToCoordinates x)) ]
 
---TODO checks if tents touch from row to row
+--checks if tents touch from row to row
 rowsCompatible :: [[Column]] -> Bool
 rowsCompatible tents
     | (length tents) <= 1 = True
@@ -106,7 +106,9 @@ getOptions r t = [ y | y <- [1..8], not (elem (r,y) t)]
 
 --checking if every tree is adjacent to at least one tent
 treesHaveTents :: LocationsOfTrees -> LocationsOfTents -> Bool
-treesHaveTents (x:xs) tents = (treeHasTent x tents) && (treesHaveTents xs tents)
+treesHaveTents (x:xs) tents
+    | xs == [] = (treeHasTent x tents)
+    | otherwise = (treeHasTent x tents) && (treesHaveTents xs tents)
 
 --checks a certain tree if it has at least one adjacent tent
 treeHasTent :: (Row,Column) -> LocationsOfTents -> Bool
