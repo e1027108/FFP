@@ -1,6 +1,7 @@
 import Prelude hiding (Word)
 import Data.Maybe
 import Data.List
+import Test.QuickCheck
 
 type Text  = String
 type Word  = String
@@ -19,8 +20,8 @@ occI text word = getOcc skipI (length(word)-1) 0 text word
              (can this be done without recalculating the values every time? e.g. Memoization?)
 -}
 getOcc :: (Word -> Char -> Int) -> Int -> Int -> Text -> Word -> [(First,Last)]
-getOcc _ _ _ "" _ = error "string can't be empty"
-getOcc _ _ _ _ "" = error "string can't be empty"
+getOcc _ _ _ "" _ = []
+getOcc _ _ _ _ "" = []
 getOcc skip tpos wcnt text word
  | tpos >= length(text)   = []                                                    -- no more occurrences possible
  | wcnt == length(word)-1 = if checkSame then [(tpos-wcnt,tpos)] ++ getOcc skip (tpos+calcSkip) 0 text word
@@ -38,6 +39,11 @@ skipS _ _ = 1
    - This function takes the last occurence of a char in the search pattern "word"
    and returns the index as a safe skip width.
    - Maybe can be "Nothing" or "Just "value"", fromMaybe defines a default case for "Nothing"
+   - last letter of a word is a special case, to prevent (length(w) - 1 - i) == 0, a max is used
 -}
 skipI :: Word -> Char -> Int
-skipI w c = (fromMaybe (length(w)-1) (elemIndex c (reverse w)))
+skipI w c = max 1 (fromMaybe (length(w)) (elemIndex c (reverse w)))
+
+-- ----- TEST property for QuickCheck -----
+prop_coincide :: Text -> Word -> Bool
+prop_coincide text word = occS text word == occI text word
