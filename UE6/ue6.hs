@@ -1,4 +1,4 @@
-import Prelude hiding (Word)
+--import Prelude hiding (Word)
 import Data.Maybe
 import Data.List
 import Test.QuickCheck
