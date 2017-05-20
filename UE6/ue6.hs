@@ -24,7 +24,7 @@ getOcc _ _ _ "" _ = []
 getOcc _ _ _ _ "" = []
 getOcc skip tpos wcnt text word
  | tpos >= length(text)   = []                                                    -- no more occurrences possible
- | wcnt == length(word)-1 = if checkSame then [(tpos-wcnt,tpos)] ++ getOcc skip (tpos+calcSkip) 0 text word
+ | wcnt == length(word)-1 = if checkSame then [(tpos-wcnt,tpos)] ++ getOcc skip (tpos+length(word)) 0 text word
                               else getOcc skip (tpos+calcSkip) 0 text word        -- found a word, add start/end-index and carry on
  | otherwise              = if checkSame then getOcc skip tpos (wcnt+1) text word -- keep matching single chars until mismatch or word end
                               else getOcc skip (tpos+calcSkip) 0 text word
