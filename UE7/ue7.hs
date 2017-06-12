@@ -1,3 +1,6 @@
+import Data.Char
+import Control.Monad
+
 infixr 5 >*>
 
 data Expr = Lit Int | Var Char | Op Ops Expr Expr deriving (Eq, Ord, Show)
@@ -66,8 +69,9 @@ opExpParse = (token '(' >*> parser >*> spot isOp >*> parser >*> token ')') `buil
 
 
 -- missing helper functions
-isDigit :: Char -> Bool
-isDigit x = ('1' <= x && x <= '9')
+
+--isDigit :: Char -> Bool
+--isDigit x = ('1' <= x && x <= '9')
 
 isOp :: Char -> Bool
 isOp x = x `elem` ['+', '-', '*', '/', '%']
@@ -83,6 +87,7 @@ optional p = (succeed []) `alt` (p `build` (:[]))
 neList :: Parse0 a b -> Parse0 a [b]
 neList p = (p `build` (:[])) `alt` ((p >*> list p) `build` (uncurry (:)))
 
+makeExpr :: (a,(Expr,(Char,(Expr,b)))) -> Expr
 makeExpr (_,(expr1,(op,(expr2,_)))) = Op (convertOperator op) expr1 expr2
 
 -- charlistToExpr convert String into Int
@@ -104,3 +109,104 @@ convertOperator x
 
 -- TestInput: topLevel parser "((234+~42)*b)"
 -- TestOutput: Op Mul (Op Add (Lit 234) (Lit (-42))) (Var 'b')
+
+parserWSp :: Parse0 Char Expr
+parserWSp = parser . filter (/=' ')
+
+topLevelWSp = topLevel
+
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-- Monadic Parser
+-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+newtype Parser a = Parse (String -> [(a,String)])
+
+instance Monad Parser where
+    p >>= f
+        = Parse (\cs -> concat [(parse (f a)) cs' | (a,cs') <- (parse p) cs])
+    return a = Parse (\cs -> [(a,cs)])
+
+-- mzero - always failing parser
+-- mplus, the non-deterministically selecting parser
+instance MonadPlus Parser where
+    mzero = Parse (\cs -> [])
+    p `mplus` q =  Parse (\cs -> parse p cs ++ parse q cs)
+
+parse :: (Parser a) -> (String -> [(a,String)])
+parse (Parse p) = p
+
+-- parser recognizing single characters
+item :: Parser Char
+item = Parse (\cs -> case cs of
+    "" -> []
+    (c:cs) -> [(c,cs)])
+
+-- the deterministically selecting parser
+(+++) :: Parser a -> Parser a -> Parser a
+p +++ q = Parse (\cs -> case parse (p `mplus` q) cs of
+                        [] -> []
+                        (x:xs) -> [x])
+
+-- recognizing single objects (compare to token)
+char :: Char -> Parser Char
+char c = sat (c ==)
+
+-- recognizing single objects satisfying a particular property (compare to spot)
+sat :: (Char -> Bool) -> Parser Char
+sat p = do {c <- item; if p c then return c else mzero}
+
+-- parse a specific string
+string :: String -> Parser String
+string "" = return ""
+string (c:cs) = do {char c; string cs; return (c:cs)}
+
+-- zero or more applications of p
+many :: Parser a -> Parser [a]
+many p = many1 p +++ return []
+
+-- one or more applications of p
+many1 :: Parser a -> Parser [a]
+many1 p = do a <- p; as <- many p; return (a:as)
+
+-- parsing of a string with blanks and line breaks
+space :: Parser String
+space = many (sat isSpace)
+
+-- parsing of a token by means of a parser p
+token' :: Parser a -> Parser a
+token' p = do {a <- p; space; return a}
+
+-- parsing of a symbol token
+symb :: String -> Parser String
+symb cs = token' (string cs)
+
+-- application of a parser p with removal of initial blanks
+apply :: Parser a -> String -> [(a,String)]
+apply p = parse (do {space; p})
+
+-- combinator
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+p `chainl1` op = do {a <- p; rest a}
+    where
+        rest a = (do f <- op
+                     b <- p
+                     rest (f a b))
+                 +++ return a
+
+expr :: Parser Int
+expr = term `chainl1` addop
+
+term :: Parser Int
+term = factor `chainl1` mulop
+
+factor :: Parser Int
+factor = digit +++ do {symb "("; n <- expr; symb ")"; return n}
+
+digit :: Parser Int
+digit = do {x <- token' (sat isDigit); return (ord x - ord '0')}
+
+addop :: Parser (Int -> Int -> Int)
+addop = do {symb "+"; return (+)} +++ do {symb "-"; return (-)}
+
+mulop :: Parser (Int -> Int -> Int)
+mulop = do {symb "*"; return (*)} +++ do {symb "/"; return (div)}
