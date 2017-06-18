@@ -1,6 +1,18 @@
+class Monad m => Bunch m where
+ zero :: m a
+ alt  :: m a -> m a -> m a
+ wrap :: m a -> m a
+
+data Term = Int Int
+            | Nil
+            | Cons Term Term
+            | Var Variable deriving Eq
+
+data Variable = Named String | Generated Int deriving (Show, Eq)
+
 (=:=) :: Bunch m => Term -> Term -> Pred m
 (t=:=u)(MkAnswer(s,n)) =
- case unify(tu) s of
+ case unify(t,u) s of
    Just s' -> return(MkAnswer(s',n))
    Nothing -> zero
 
@@ -35,32 +47,38 @@ deref s t = t
 
 unify :: (Term, Term) -> Subst -> Maybe Subst
 unify (t,u) s =
-case (deref s t, deref s u) of
-  (Nil, Nil) -> Just s
-  (Cons x xs, Cons y ys)  -> unify (x,y) s >>= unify (xs, ys)
-  (Int n, Int m) | (n==m) -> Just s
-  (Var x, Var y) | (x==y) -> Just s
-  (Var x, t)              -> if occurs x t s then Nothing
+ case (deref s t, deref s u) of
+   (Nil, Nil) -> Just s
+   (Cons x xs, Cons y ys)  -> unify (x,y) s >>= unify (xs, ys)
+   (Int n, Int m) | (n==m) -> Just s
+   (Var x, Var y) | (x==y) -> Just s
+   (Var x, t)              -> if occurs x t s then Nothing
                                    else Just (extend x t s)
-  (t, Var x)              -> if occurs x t s then Nothing
+   (t, Var x)              -> if occurs x t s then Nothing
                                    else Just (extend x t s)
-  (_,_)                   -> Nothing
+   (_,_)                   -> Nothing
 
 occurs :: Variable -> Term -> Subst -> Bool
 occurs x t s =
-case deref s t of
-  Var y     -> x == y
-  Cons y ys -> occurs x y s || occurs x ys s
-  _         -> False
+ case deref s t of
+   Var y     -> x == y
+   Cons y ys -> occurs x y s || occurs x ys s
+   _         -> False
 
 
 append :: Bunch m => (Term, Term, Term) -> Pred m
 append(p,q,r) =
-step(p =:= Nil &&& q =:= r
-     ||| exists (\x -> exists (\a -> exists (\b ->
-           p =:= Cons x a &&& r =:= Cons x b
-           &&& append(a,q,b)))))
+ step(p =:= Nil &&& q =:= r
+      ||| exists (\x -> exists (\a -> exists (\b ->
+            p =:= Cons x a &&& r =:= Cons x b
+            &&& append(a,q,b)))))
 
+step :: Bunch m => Pred m -> Pred m
+step p s = wrap (p s)
+
+exists :: Bunch m => (Term -> Pred m) -> Pred m
+exists p (MkAnswer (s,n)) =
+  p (Var (Generated n)) (MkAnswer (s,n+1))
 
 type Pred m = Answer -> m Answer
 
