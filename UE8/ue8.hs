@@ -31,6 +31,7 @@ instance Bunch [] where
  wrap xs   = xs
 
 -- diagonalization stragety --
+-- TODO: not associative, group generators together pairwise (slides pp1084)
 newtype Diag a = MkDiag (Stream a) deriving Show
 
 unDiag :: Diag a -> Stream a
@@ -97,11 +98,17 @@ infixr 4 =:=
 infixr 3 &&&
 infixr 2 |||
 
--- kann man [(Variable,Term)] statt [(Var,Term)] sagen?
-newtype Subst = MkSubst [(Variable, Term)] deriving Show
+-- TODO: Var -> data constructor is in scope, did you mean DataKinds?
+--       ghci -XDataKinds -> non-promotable type "Term" fml..
+newtype Subst = MkSubst [(Var,Term)] deriving Show
+
+unSubst :: Subst -> [(Var,Term)]
 unSubst(MkSubst s) = s
 
+idsubst :: Subst
 idsubst = MkSubst[]
+
+extend :: Var -> Term -> Subst -> Subst
 extend x t (MkSubst s) = MkSubst ((x,t):s)
 
 apply :: Subst -> Term -> Term
@@ -156,6 +163,13 @@ type Pred m = Answer -> m Answer
 
 newtype Answer = MkAnswer (Subst, Int) deriving Show
 
+-- supporting functions for modelling --
+initial :: Answer
+initial = MkAnswer (idsubst,0)
+
+run :: Bunch m => Pred m -> m Answer
+run p = p initial
+
 -- supporting function lzw (like zip with - except non-empty part of a list gets attached) --
 lzw :: (a -> a -> a) -> Stream a -> Stream a -> Stream a
 lzw f [] ys         = ys
@@ -173,5 +187,11 @@ bindm xm f = map concat (diag (map (concatAll . map f) xm))
 concatAll :: [Stream [b]] -> Stream [b]
 concatAll = foldr (lzw (++)) []
 
--- intMat --
-intMat = MkMatrix [[n] | n <- [1..]]
+-- testing method "factor" --
+-- usage e.g.: factor 24 :: [Stream,Matrix,Diag] (Int,Int)
+factor :: Bunch m => Int -> m (Int,Int)
+factor n = do r <- choose [1..]; s <- choose [1..];
+              test (r*s==n); return (r,s)
+
+choose :: Bunch m => Stream a -> m a
+choose (x:xs) = wrap (return x `alt` choose xs)
