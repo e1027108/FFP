@@ -100,15 +100,15 @@ infixr 2 |||
 
 -- TODO: Var -> data constructor is in scope, did you mean DataKinds?
 --       ghci -XDataKinds -> non-promotable type "Term" fml..
-newtype Subst = MkSubst [(Var,Term)] deriving Show
+newtype Subst = MkSubst [(Variable,Term)] deriving Show
 
-unSubst :: Subst -> [(Var,Term)]
+unSubst :: Subst -> [(Variable,Term)]
 unSubst(MkSubst s) = s
 
 idsubst :: Subst
 idsubst = MkSubst[]
 
-extend :: Var -> Term -> Subst -> Subst
+extend :: Variable -> Term -> Subst -> Subst
 extend x t (MkSubst s) = MkSubst ((x,t):s)
 
 apply :: Subst -> Term -> Term
