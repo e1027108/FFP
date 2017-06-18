@@ -3,16 +3,34 @@ import Control.Applicative
 
 type Stream a = [a]
 
+-- for ghci compatibility --
+instance Applicative Diag where
+ pure  = return
+ (<*>) = ap
+
+instance Functor Diag where
+ fmap = liftM
+
+instance Applicative Matrix where
+ pure  = return
+ (<*>) = ap
+
+instance Functor Matrix where
+ fmap = liftM
+----------------------------
+
 class Monad m => Bunch m where
  zero :: m a
  alt  :: m a -> m a -> m a
  wrap :: m a -> m a
 
+-- depth search strategy --
 instance Bunch [] where
  zero      = []
  alt xs ys = xs ++ ys
  wrap xs   = xs
 
+-- diagonalization stragety --
 newtype Diag a = MkDiag (Stream a) deriving Show
 
 unDiag :: Diag a -> Stream a
@@ -26,15 +44,6 @@ instance Monad Diag where
  return x = MkDiag [x]
  MkDiag xs >>= f = MkDiag (concat (diag (map (unDiag . f) xs)))
 
--- for ghci compatibility --
-instance Applicative Diag where
- pure  = return
- (<*>) = ap
-
-instance Functor Diag where
- fmap = liftM
-----------------------------
-
 instance Bunch Diag where
  zero    = MkDiag []
  alt (MkDiag xs) (MkDiag ys)
@@ -44,6 +53,24 @@ instance Bunch Diag where
 shuffle :: [a] -> [a] -> [a]
 shuffle [] ys = ys
 shuffle (x:xs) ys = x : shuffle ys xs
+
+-- breadth search strategy --
+newtype Matrix a = MkMatrix (Stream [a]) deriving Show
+
+unMatrix :: Matrix a -> Stream [a]
+unMatrix (MkMatrix xm) = xm
+
+instance Monad Matrix where
+ return x = MkMatrix [[x]]
+ MkMatrix xm >>= f = MkMatrix (bindm xm (unMatrix . f))
+
+instance Bunch Matrix where
+ zero     = MkMatrix []
+ alt (MkMatrix xm) (MkMatrix ym)
+          = MkMatrix (lzw (++) xm ym)
+ wrap (MkMatrix xm)
+          = MkMatrix ([]:xm)
+------------------------------
 
 data Term = Int Int | Nil | Cons Term Term | Var Variable deriving (Show, Eq)
 data Variable = Named String | Generated Int deriving (Show, Eq)
@@ -138,3 +165,13 @@ lzw f (x:xs) (y:ys) = (f x y):(lzw f xs ys)
 -- supporting function test --
 test :: Bunch m => Bool -> m ()
 test b = if b then return () else zero
+
+-- support function bindm for Matrix --
+bindm :: Stream [a] -> (a -> Stream [b]) -> Stream [b]
+bindm xm f = map concat (diag (map (concatAll . map f) xm))
+
+concatAll :: [Stream [b]] -> Stream [b]
+concatAll = foldr (lzw (++)) []
+
+-- intMat --
+intMat = MkMatrix [[n] | n <- [1..]]
