@@ -152,6 +152,15 @@ append(p,q,r) =
             p =:= Cons x a &&& r =:= Cons x b
             &&& append(a,q,b)))))
 
+good :: Bunch m => Term -> Pred m
+good (s) =
+  step (s =:= Cons (Int 0) Nil
+      ||| exists (\t -> exists (\q -> exists (\r ->
+            s =:= Cons (Int 1) t
+            &&& append (q,r,t)
+            &&& good (q)
+            &&& good (r)))))
+
 step :: Bunch m => Pred m -> Pred m
 step p s = wrap (p s)
 
