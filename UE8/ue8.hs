@@ -73,14 +73,11 @@ instance Bunch Matrix where
           = MkMatrix ([]:xm)
 ------------------------------
 
-data Term = Int Int | Nil | Cons Term Term | Var Variable deriving (Show, Eq)
-data Variable = Named String | Generated Int deriving (Show, Eq)
+data Term = Int Int | Nil | Cons Term Term | Var Variable deriving Eq
+data Variable = Named String | Generated Int deriving Eq
 
 var :: String -> Term
 var s = Var (Named s)
-
-list :: [Int] -> Term
-list xs = foldr Cons Nil (map Int xs)
 
 (=:=) :: Bunch m => Term -> Term -> Pred m
 (t=:=u)(MkAnswer(s,n)) =
@@ -98,9 +95,7 @@ infixr 4 =:=
 infixr 3 &&&
 infixr 2 |||
 
--- TODO: Var -> data constructor is in scope, did you mean DataKinds?
---       ghci -XDataKinds -> non-promotable type "Term" fml..
-newtype Subst = MkSubst [(Variable,Term)] deriving Show
+newtype Subst = MkSubst [(Variable,Term)]
 
 unSubst :: Subst -> [(Variable,Term)]
 unSubst(MkSubst s) = s
@@ -170,7 +165,7 @@ exists p (MkAnswer (s,n)) =
 
 type Pred m = Answer -> m Answer
 
-newtype Answer = MkAnswer (Subst, Int) deriving Show
+newtype Answer = MkAnswer (Subst, Int)
 
 -- supporting functions for modelling --
 initial :: Answer
@@ -204,3 +199,25 @@ factor n = do r <- choose [1..]; s <- choose [1..];
 
 choose :: Bunch m => Stream a -> m a
 choose (x:xs) = wrap (return x `alt` choose xs)
+
+instance Show Term where
+ show Nil = ""
+ show (Int int) = show(int)
+ show (Cons term1 term2) = show (term1) ++ "," ++ show(term2)
+ show (Var var) = show(var)
+
+instance Show Subst where
+ show (subst) = formatSubst (unSubst subst)
+
+formatSubst :: [(Variable,Term)] -> String
+formatSubst ((var,term):x:xs) = show(var) ++ "=" ++ show(term) ++ ", " ++ formatSubst (x:xs)
+formatSubst ((var,term):[]) = show(var) ++ "=" ++ show(term)
+formatSubst []            = ""
+
+instance Show Answer where
+ show (MkAnswer (subst, int)) = show ("{"++show(subst)++"}")
+
+--data Variable = Named String | Generated Int deriving Eq
+instance Show Variable where
+ show (Named str)     = str
+ show (Generated int) = show(int)
