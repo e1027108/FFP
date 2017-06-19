@@ -79,6 +79,9 @@ data Variable = Named String | Generated Int deriving Eq
 var :: String -> Term
 var s = Var (Named s)
 
+list :: [Int] -> Term
+list xs = foldr Cons Nil (map Int xs)
+
 (=:=) :: Bunch m => Term -> Term -> Pred m
 (t=:=u)(MkAnswer(s,n)) =
  case unify(t,u) s of
